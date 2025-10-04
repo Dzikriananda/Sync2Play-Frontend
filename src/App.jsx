@@ -1,4 +1,4 @@
-import { useState,useRef,useEffect } from 'react'
+import { useState,useRef,useEffect,useCallback } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import AudioPlayer from 'react-h5-audio-player';
@@ -18,14 +18,36 @@ function App() {
     addDummyPage();
     setUserRole(role);
   };
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+  useEffect(() => {
+    if (isIOS) {
+      const preventSwipe = (e) => {
+        if (e.touches[0].pageX < 30) {
+          e.preventDefault(); // Block left-edge swipe navigation
+        }
+      };
 
+      document.addEventListener("touchstart", preventSwipe, { passive: false });
+
+      return () => {
+        document.removeEventListener("touchstart", preventSwipe);
+      };
+    }
+  },[]);
+
+  const handleBackClickForIphone = useCallback(() => {
+    setUserRole(null);
+    window.history.pushState(null, "", window.location.href);
+  },[]);
+
+  
   let content;
   if(userRole === 'host') {
-    content = <HostComponent/>
+    content = <HostComponent onBackForIphone={handleBackClickForIphone} isIOS={isIOS}/>
   } else if (userRole === 'listener') {
-    content = <ListenerComponent/>
+    content = <ListenerComponent onBackForIphone={handleBackClickForIphone} isIOS={isIOS}/>
   } else {
-    content = <PreComponent onRoleClick={handleChooseRoleClick}/>
+    content = <PreComponent onRoleClick={handleChooseRoleClick} />
   }
 
   function addDummyPage() {
@@ -93,8 +115,9 @@ function PreComponent({onRoleClick}) {
   );
 }
 
-function ListenerComponent() {
+function ListenerComponent({onBackForIphone,isIOS}) {
   const [code, setCode] = useState("");
+
 
 
 
@@ -108,6 +131,9 @@ function ListenerComponent() {
 
   return (
     <div className='min-w-96 min-h-64 bg-white rounded-2xl shadow-2xs p-8'>
+      {
+        isIOS && <BackButton onClick={onBackForIphone}/>
+      }
       <h1 className='text-3xl font-extrabold text-gray-800'>Sync2Play</h1>
       <h2 className=' text-gray-500 mt-2'>Enter a Host Code consisted of 6 Characters</h2>
       <h2 className=' text-gray-700 font-medium text-sm mt-6'>Host Code</h2>
@@ -116,12 +142,13 @@ function ListenerComponent() {
         Enter
       </div>
       {/* {(false) ? <CustomAudioPlayer/> : null} */}
+      <BackButton/>
       
     </div>
   );
 }
 
-function HostComponent() {
+function HostComponent({onBackForIphone,isIOS}) {
   const [count, setCount] = useState(0);
   const [url,setUrl] = useState("");
   const [isReady,setIsReady] = useState(false);
@@ -132,6 +159,9 @@ function HostComponent() {
 
   return (
     <div className='min-w-96 min-h-96 bg-white rounded-2xl shadow-2xs p-8'>
+      {
+        isIOS && <BackButton onClick={onBackForIphone}/>
+      }
       <h1 className='text-3xl font-extrabold text-gray-800'>Sync2Play</h1>
       <h2 className=' text-gray-500 mt-2'>Enter a direct link to an audio file (.mp3, .wav) to play and download it.</h2>
       <h2 className=' text-gray-700 font-medium text-sm mt-6'>Audio File Url</h2>
@@ -217,6 +247,20 @@ const FileInput = ({ onFileChoosen }) => {
   );
 };
 
+
+function BackButton({ onClick }) {
+
+  
+  return (
+    <button
+      onClick={onClick}
+      className="absolute top-4 left-4 bg-white rounded-full shadow-md px-4 py-2 text-gray-700 font-semibold hover:bg-gray-100 transition z-20"
+      aria-label="Back"
+    >
+      ← Back
+    </button>
+  );
+}
 
 const Player = () => (
   <audio controls
