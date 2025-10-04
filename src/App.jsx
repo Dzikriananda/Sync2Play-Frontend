@@ -141,9 +141,7 @@ function ListenerComponent({onBackForIphone,isIOS}) {
       <div className='mt-8 w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50' >
         Enter
       </div>
-      {/* {(false) ? <CustomAudioPlayer/> : null} */}
-      <BackButton/>
-      
+      {/* {(false) ? <CustomAudioPlayer/> : null} */}      
     </div>
   );
 }
