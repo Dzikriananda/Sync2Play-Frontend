@@ -1,8 +1,8 @@
-import { useState,useRef } from 'react'
+import { useState,useRef,useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import AudioPlayer from 'react-h5-audio-player';
-
+import { AnimatePresence, motion } from "framer-motion";
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -10,7 +10,118 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import bg from './assets/bg.jpg';
 function App() {
+  const [userRole,setUserRole] = useState(null);
+
+  const handleChooseRoleClick = (role) => {
+    addDummyPage();
+    setUserRole(role);
+  };
+
+  let content;
+  if(userRole === 'host') {
+    content = <HostComponent/>
+  } else if (userRole === 'listener') {
+    content = <ListenerComponent/>
+  } else {
+    content = <PreComponent onRoleClick={handleChooseRoleClick}/>
+  }
+
+  function addDummyPage() {
+    // 1. Push an empty state on initial load. This creates a "trap" in the history.
+    // The current URL remains the same, but a new history entry is created.
+    window.history.pushState(null, "", window.location.href);
+
+    const handlePopState = (event) => {
+      // 2. When popstate fires (meaning user pressed back), immediately push a new state.
+      // This effectively "replaces" the state the user just navigated from,
+      // keeping them on the current page and preventing them from going further back.
+      window.history.pushState(null, "", window.location.href);
+      setUserRole(null);
+      // You could also add logic here to confirm if the user really wants to leave,
+      // or redirect them to a specific part of your app.
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  };
+
+  return (
+    <div className='h-screen w-screen  flex justify-center items-center p-4 md:p-0'>
+        <img
+          src={bg}
+          alt="background"
+          className="absolute inset-0 w-full h-full object-cover"
+       />
+       <AnimatePresence mode="wait">
+        <motion.div
+          key={userRole} // penting buat re-trigger animasi
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -30 }}
+          transition={{ duration: 0.4 }}
+          className=" z-10 w-full flex justify-center items-center"
+        >
+          {content}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+
+  )
+}
+
+function PreComponent({onRoleClick}) {
+  return (
+    <div className='min-w-96 min-h-60 bg-white rounded-2xl shadow-2xs p-8'>
+      <h1 className='text-3xl font-extrabold text-gray-800'>Welcome to Simple Audio Hub</h1>
+      <h2 className=' text-gray-500 mt-2 text-2xl mb-16'>Are you the host or the listener?</h2>
+      <div className='flex flex-row'>
+        <div className='w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50' onClick={() => onRoleClick('host')}>
+          I am the Host
+        </div>
+        <div className='w-3'/>
+        <div className='w-full text-center bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50' onClick={() => onRoleClick('listener')}>
+          I am the Listener
+        </div>
+      </div>
+      <h2 className=' text-blue-500 mt-2 text-lg '>Choose the role to continue</h2>
+    </div>
+  );
+}
+
+function ListenerComponent() {
+  const [code, setCode] = useState("");
+
+
+
+  function handleChange(e) {
+    const value = e.target.value;
+    if (value.length <= 6) {
+      setCode(value);
+    }
+  }
+  
+
+  return (
+    <div className='min-w-96 min-h-64 bg-white rounded-2xl shadow-2xs p-8'>
+      <h1 className='text-3xl font-extrabold text-gray-800'>Simple Audio Hub</h1>
+      <h2 className=' text-gray-500 mt-2'>Enter a Host Code consisted of 6 Characters</h2>
+      <h2 className=' text-gray-700 font-medium text-sm mt-6'>Host Code</h2>
+      <input className='mt-1 border-1 border-black rounded-lg w-full h-9 px-2 shadow-2xs' type="text" placeholder='e.g., GS8aF' value={code} onChange={(val) => handleChange(val)} maxLength={6}/>
+      <div className='mt-8 w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50' >
+        Enter
+      </div>
+      {/* {(false) ? <CustomAudioPlayer/> : null} */}
+      
+    </div>
+  );
+}
+
+function HostComponent() {
   const [count, setCount] = useState(0);
   const [url,setUrl] = useState("");
   const [isReady,setIsReady] = useState(false);
@@ -19,41 +130,35 @@ function App() {
     setFileName(msg);
   };
 
-
-
   return (
-    <div className='h-screen w-screen bg-[#e9e9eb] flex justify-center items-center p-4 md:p-0'>
-      <div className='min-w-96 min-h-96 bg-white rounded-2xl shadow-2xs p-8'>
-        <h1 className='text-3xl font-extrabold text-gray-800'>Simple Audio Hub</h1>
-        <h2 className=' text-gray-500 mt-2'>Enter a direct link to an audio file (.mp3, .wav) to play and download it.</h2>
-        <h2 className=' text-gray-700 font-medium text-sm mt-6'>Audio File Url</h2>
-        <input className='mt-1 border-1 border-black rounded-lg w-full h-9 px-2 shadow-2xs' type="text" placeholder='e.g., https://dreamybull.com/song.mp3' />
-        <div className='h-3'/>
-        <div className='flex flex-row'>
-        <div className='w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50'>
-          Load
-        </div>
-        <div className='w-3'/>
-        {/* <div 
-          className='  text-center w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50'
-          onClick={() => setIsReady(true)}
-          >
-          Upload a File
-        </div> */}
-        <FileInput onFileChoosen={handleChoosenFile}/>
-
-        </div>
-        {(isReady) ? <CustomAudioPlayer/> : null}
-        <h1>{fileName}</h1>
-        <AlertDialog/>
-
-
+    <div className='min-w-96 min-h-96 bg-white rounded-2xl shadow-2xs p-8'>
+      <h1 className='text-3xl font-extrabold text-gray-800'>Simple Audio Hub</h1>
+      <h2 className=' text-gray-500 mt-2'>Enter a direct link to an audio file (.mp3, .wav) to play and download it.</h2>
+      <h2 className=' text-gray-700 font-medium text-sm mt-6'>Audio File Url</h2>
+      <input className='mt-1 border-1 border-black rounded-lg w-full h-9 px-2 shadow-2xs' type="text" placeholder='e.g., https://dreamybull.com/song.mp3' />
+      <div className='h-3'/>
+      <div className='flex flex-row'>
+      <div className='w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50'>
+        Load
+      </div>
+      <div className='w-3'/>
+      {/* <div 
+        className='  text-center w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50'
+        onClick={() => setIsReady(true)}
+        >
+        Upload a File
+      </div> */}
+      <FileInput onFileChoosen={handleChoosenFile}/>
 
       </div>
-    
+      {(isReady) ? <CustomAudioPlayer/> : null}
+      <h1>{fileName}</h1>
+      <AlertDialog/>
     </div>
-  )
+  );
+
 }
+
 const FileInput = ({ onFileChoosen }) => {
   const inputRef = useRef(null);
   const [fileInfo, setFileInfo] = useState(null);
