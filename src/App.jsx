@@ -77,8 +77,8 @@ function App() {
 function PreComponent({onRoleClick}) {
   return (
     <div className='min-w-96 min-h-60 bg-white rounded-2xl shadow-2xs p-8'>
-      <h1 className='text-3xl font-extrabold text-gray-800'>Welcome to Simple Audio Hub</h1>
-      <h2 className=' text-gray-500 mt-2 text-2xl mb-16'>Are you the host or the listener?</h2>
+      <h1 className='text-3xl font-extrabold text-gray-800'>Welcome to Sync2Play </h1>
+      <h2 className=' text-gray-500 mt-2 text-xl mb-16'>Are you the host or the listener?</h2>
       <div className='flex flex-row'>
         <div className='w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50' onClick={() => onRoleClick('host')}>
           I am the Host
@@ -108,7 +108,7 @@ function ListenerComponent() {
 
   return (
     <div className='min-w-96 min-h-64 bg-white rounded-2xl shadow-2xs p-8'>
-      <h1 className='text-3xl font-extrabold text-gray-800'>Simple Audio Hub</h1>
+      <h1 className='text-3xl font-extrabold text-gray-800'>Sync2Play</h1>
       <h2 className=' text-gray-500 mt-2'>Enter a Host Code consisted of 6 Characters</h2>
       <h2 className=' text-gray-700 font-medium text-sm mt-6'>Host Code</h2>
       <input className='mt-1 border-1 border-black rounded-lg w-full h-9 px-2 shadow-2xs' type="text" placeholder='e.g., GS8aF' value={code} onChange={(val) => handleChange(val)} maxLength={6}/>
@@ -132,7 +132,7 @@ function HostComponent() {
 
   return (
     <div className='min-w-96 min-h-96 bg-white rounded-2xl shadow-2xs p-8'>
-      <h1 className='text-3xl font-extrabold text-gray-800'>Simple Audio Hub</h1>
+      <h1 className='text-3xl font-extrabold text-gray-800'>Sync2Play</h1>
       <h2 className=' text-gray-500 mt-2'>Enter a direct link to an audio file (.mp3, .wav) to play and download it.</h2>
       <h2 className=' text-gray-700 font-medium text-sm mt-6'>Audio File Url</h2>
       <input className='mt-1 border-1 border-black rounded-lg w-full h-9 px-2 shadow-2xs' type="text" placeholder='e.g., https://dreamybull.com/song.mp3' />
