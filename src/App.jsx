@@ -79,6 +79,11 @@ function App() {
           alt="background"
           className="absolute inset-0 w-full h-full object-cover"
        />
+        {
+          userRole != null && isIOS && (
+            <BackButton onClick={handleBackClickForIphone} />
+          )
+        }
        <AnimatePresence mode="wait">
         <motion.div
           key={userRole} // penting buat re-trigger animasi
@@ -115,7 +120,7 @@ function PreComponent({onRoleClick}) {
   );
 }
 
-function ListenerComponent({onBackForIphone,isIOS}) {
+function ListenerComponent() {
   const [code, setCode] = useState("");
 
 
@@ -131,9 +136,7 @@ function ListenerComponent({onBackForIphone,isIOS}) {
 
   return (
     <div className='min-w-96 min-h-64 bg-white rounded-2xl shadow-2xs p-8'>
-      {
-        isIOS && <BackButton onClick={onBackForIphone}/>
-      }
+     
       <h1 className='text-3xl font-extrabold text-gray-800'>Sync2Play</h1>
       <h2 className=' text-gray-500 mt-2'>Enter a Host Code consisted of 6 Characters</h2>
       <h2 className=' text-gray-700 font-medium text-sm mt-6'>Host Code</h2>
@@ -146,7 +149,7 @@ function ListenerComponent({onBackForIphone,isIOS}) {
   );
 }
 
-function HostComponent({onBackForIphone,isIOS}) {
+function HostComponent() {
   const [count, setCount] = useState(0);
   const [url,setUrl] = useState("");
   const [isReady,setIsReady] = useState(false);
@@ -157,9 +160,6 @@ function HostComponent({onBackForIphone,isIOS}) {
 
   return (
     <div className='min-w-96 min-h-96 bg-white rounded-2xl shadow-2xs p-8'>
-      {
-        isIOS && <BackButton onClick={onBackForIphone}/>
-      }
       <h1 className='text-3xl font-extrabold text-gray-800'>Sync2Play</h1>
       <h2 className=' text-gray-500 mt-2'>Enter a direct link to an audio file (.mp3, .wav) to play and download it.</h2>
       <h2 className=' text-gray-700 font-medium text-sm mt-6'>Audio File Url</h2>
