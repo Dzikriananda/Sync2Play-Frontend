@@ -29,21 +29,26 @@ function App() {
   }
 
   function addDummyPage() {
-    const uniqueState = Date.now(); // unique per call
-    window.history.pushState({ id: uniqueState }, "", `#${uniqueState}`);
-  
+    // 1. Push an empty state on initial load. This creates a "trap" in the history.
+    // The current URL remains the same, but a new history entry is created.
+    window.history.pushState(null, "", window.location.href);
+
     const handlePopState = (event) => {
-      window.history.pushState({ id: Date.now() }, "", `#${Date.now()}`);
+      // 2. When popstate fires (meaning user pressed back), immediately push a new state.
+      // This effectively "replaces" the state the user just navigated from,
+      // keeping them on the current page and preventing them from going further back.
+      window.history.pushState(null, "", window.location.href);
       setUserRole(null);
+      // You could also add logic here to confirm if the user really wants to leave,
+      // or redirect them to a specific part of your app.
     };
-  
+
     window.addEventListener("popstate", handlePopState);
-  
+
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }
-  
+  };
 
   return (
     <div className='h-screen w-screen  flex justify-center items-center p-4 md:p-0'>
