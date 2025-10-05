@@ -1,6 +1,4 @@
 function BackButton({ onClick }) {
-
-  
     return (
       <button
         onClick={onClick}
