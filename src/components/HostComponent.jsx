@@ -25,6 +25,7 @@ function HostComponent() {
   };
 
   const onFileUpload = async () => {
+    console.log("try to uploading file....");
     try {
       const formData = new FormData();
       formData.append("audio", file, file.name);
