@@ -59,7 +59,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady}) {
       formData.append("audio", file, file.name);
 
       const response = await axios.post(
-        "https:///sync2play-api.my.id/api/audio/upload",
+        "https://sync2play-api.my.id/api/audio/upload",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

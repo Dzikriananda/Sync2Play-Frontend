@@ -28,7 +28,10 @@ function HostComponent() {
   return (
     <div>
       {loading ? (
-        <LoadingComponent />
+        <div>
+          <LoadingComponent/>
+          <HostAudioPrepComponent callBackWhenMediaReady={onAudioReady}/>
+        </div>
       ) : isAudioReady ? (
         <AudioPlayerComponent data={response} file={file}/>
       ) : (
