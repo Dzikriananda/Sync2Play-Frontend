@@ -3,9 +3,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import * as React from 'react';
 import bg from './assets/bg.jpg';
 import OnBoardingComponent from './components/OnBoardingComponent';
-import HostComponent from './components/HostComponent';
 import ListenerComponent from './components/ListenerComponent';
 import BackButton from './components/BackButton';
+import AudioPlayerComponent from './components/AudioPlayerComponent';
+import HostAudioPrepComponent from './components/HostAudioPrepComponent';
+import HostComponent from './components/HostComponent';
 function App() {
   const [userRole,setUserRole] = useState(null);
 
@@ -38,7 +40,9 @@ function App() {
   
   let content;
   if(userRole === 'host') {
-    content = <HostComponent onBackForIphone={handleBackClickForIphone} isIOS={isIOS}/>
+    content = <HostComponent/>
+    // content = <HostAudioPrepComponent onBackForIphone={handleBackClickForIphone} isIOS={isIOS}/>
+    // content = <AudioPlayerComponent/>
   } else if (userRole === 'listener') {
     content = <ListenerComponent onBackForIphone={handleBackClickForIphone} isIOS={isIOS}/>
   } else {

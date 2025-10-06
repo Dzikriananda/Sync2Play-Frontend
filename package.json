@@ -15,10 +15,12 @@
     "@mui/material": "^7.3.3",
     "@tailwindcss/vite": "^4.1.14",
     "axios": "^1.12.2",
+    "lucide-react": "^0.544.0",
     "motion": "^12.23.22",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-h5-audio-player": "^3.10.1",
+    "react-loading-indicators": "^1.0.1",
     "socket.io-client": "^4.8.1",
     "tailwindcss": "^4.1.14"
   },

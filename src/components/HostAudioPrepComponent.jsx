@@ -1,0 +1,176 @@
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import FileInput from './FileInput';
+import axios from "axios";
+import { Riple } from 'react-loading-indicators';
+
+
+function HostAudioPrepComponent({callBackWhenMediaReady}) {
+  const [url, setUrl] = useState("");
+  const [isReady, setIsReady] = useState(false);
+  const [file, setFile] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [isMediaValid, setIsMediaValid] = useState(null);
+
+  const validMediaMime = new Map([
+    ["wav", "audio/wav"],
+    ["mp3", "audio/mpeg"]
+  ]);   
+
+  function isAnAudioFile(type) {
+    const iterator = validMediaMime.values();
+    for (const value of iterator) {
+      if (type === value) return true;
+    }
+    return false;
+  }
+
+  const onFileChoosen = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      const sizeInKB = (selectedFile.size / 1024).toFixed(2);
+      console.log(selectedFile);
+      const type = selectedFile.type;
+      if (!isAnAudioFile(type)) {
+        setFile(null);
+        setIsMediaValid({
+          isValid: false,
+          message: "Invalid file type selected. Please choose an audio file (.mp3, .wav)"
+        });
+      } else if (sizeInKB > 20480) {
+        setFile(null);
+        setIsMediaValid({
+          isValid: false,
+          message: "File must be smaller than 20 MB!"
+        });
+      } else {
+        setIsMediaValid({ isValid: true, message: "File is valid" });
+        setFile(selectedFile);
+      }
+    } else {
+      setFile(null);
+    }
+  };
+
+  const onFileUpload = async () => {
+    console.log("try to uploading file....");
+    try {
+      const formData = new FormData();
+      formData.append("audio", file, file.name);
+
+      const response = await axios.post(
+        "https:///sync2play-api.my.id/api/audio/upload",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setProgress(percentCompleted);
+          },
+        }
+      );
+      if (response.status === 200) {
+        callBackWhenMediaReady(response.data,file);
+      }
+    } catch (error) {
+      setProgress(0);
+      console.error("❌ Upload failed:", error);
+    }
+  };
+
+  return (
+    <motion.div
+      layout
+      transition={{ layout: { duration: 0.4, ease: "easeInOut" } }}
+      className="max-w-[500px] bg-white rounded-2xl shadow-2xs p-8"
+    >
+      <h1 className="text-3xl font-extrabold text-gray-800">Sync2Play</h1>
+      <h2 className="text-gray-500 mt-2">
+        Enter a direct link to an audio file (.mp3, .wav) to play and download it.
+      </h2>
+
+      <h2 className="text-gray-700 font-medium text-sm mt-6">Audio File Url</h2>
+      <input
+        className="mt-1 border border-gray-300 rounded-lg w-full h-9 px-2 shadow-md"
+        type="text"
+        placeholder="e.g., https://dreamybull.com/song.mp3"
+      />
+
+      <div className="h-3" />
+      <div className="flex flex-row">
+        <div
+          className="w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 cursor-pointer"
+          onClick={() => setIsReady(!isReady)}
+        >
+          Load URL
+        </div>
+        <div className="w-3" />
+        <FileInput onFileChoosen={onFileChoosen} />
+      </div>
+
+
+      <AnimatePresence>
+        {file && (
+          <motion.div
+            key="fileInfo"
+            layout
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <h1 className="break-all whitespace-normal text-center mt-3 mb-3">
+              {file.name}
+            </h1>
+            <div
+              onClick={onFileUpload}
+              className="w-full text-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 cursor-pointer"
+            >
+              Upload This File
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isMediaValid && !isMediaValid.isValid && (
+          <motion.p
+            key="error"
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            transition={{ duration: 0.3 }}
+            className="text-red-500 text-sm mt-2"
+          >
+            Error: {isMediaValid.message}.
+          </motion.p>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {progress > 0 && (
+          <motion.div
+            key="progress"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mt-6 w-full bg-gray-200 rounded-full h-6 overflow-hidden"
+          >
+            <motion.div
+              className="h-6 bg-green-500 text-white rounded-full flex items-center justify-center"
+              style={{ width: `${progress}%` }}
+              transition={{ duration: 0.3 }}
+            >
+              {progress}%
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+export default HostAudioPrepComponent;
