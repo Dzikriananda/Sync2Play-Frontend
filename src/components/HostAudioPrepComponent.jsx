@@ -11,6 +11,8 @@ function HostAudioPrepComponent({callBackWhenMediaReady}) {
   const [file, setFile] = useState(null);
   const [progress, setProgress] = useState(0);
   const [isMediaValid, setIsMediaValid] = useState(null);
+  const baseUrl = import.meta.env.VITE_BASE_API_URL;
+
 
   const validMediaMime = new Map([
     ["wav", "audio/wav"],
@@ -59,7 +61,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady}) {
       formData.append("audio", file, file.name);
 
       const response = await axios.post(
-        "https://sync2play-api.my.id/api/audio/upload",
+        `${baseUrl}/api/audio/upload`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
