@@ -32,11 +32,11 @@
         const localStartTime = startServerTime - serverOffset;
       
         const now = Date.now();
-        const delay = localStartTime - now;
+        let delay = localStartTime - now;
       
         console.log(`before Audio will play in ${delay.toFixed(0)} ms`);
         if(isDesktopOS()) {
-          delay + 300;
+          delay += 300;
         }
         console.log(`after Audio will play in ${delay.toFixed(0)} ms`);
 
@@ -56,7 +56,6 @@
 
       function isDesktopOS(userAgent = navigator.userAgent, width = window.innerWidth) {
         const ua = userAgent.toLowerCase();
-        console.log("is dekstop " + userAgent);
         const isMobileUA = /mobile|android|iphone|ipad|ipod|tablet/i.test(ua);
         const isWideScreen = width > 768;
         const isDesktopUA = ua.includes('windows nt') || ua.includes('mac os x') || ua.includes('linux');
