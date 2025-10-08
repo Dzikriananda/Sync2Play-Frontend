@@ -223,22 +223,24 @@
       const unlockAudio = () => {
         const audio = internalRef.current?.audio.current;
         if (audio) {
-          const originalVolume = audio.volume;
-          audio.volume = 0;
-      
-          try {
-            const playPromise = audio.play();
-            if (playPromise !== undefined) {
-              // 👉 Immediately schedule a pause on the next tick
-              setTimeout(() => {
-                audio.pause();
-                audio.currentTime = 0;
-                audio.volume = originalVolume;
-                console.log("✅ iOS audio unlocked (forced immediate pause)");
-              }, 0);
+          if(audio.currentTime === 0) { //Agar tidak kereset ketika resume dari pause
+            const originalVolume = audio.volume;
+            audio.volume = 0;
+        
+            try {
+              const playPromise = audio.play();
+              if (playPromise !== undefined) {
+                // 👉 Immediately schedule a pause on the next tick
+                setTimeout(() => {
+                  audio.pause();
+                  audio.currentTime = 0;
+                  audio.volume = originalVolume;
+                  console.log("✅ iOS audio unlocked (forced immediate pause)");
+                }, 0);
+              }
+            } catch (err) {
+              console.log("unlock error:", err);
             }
-          } catch (err) {
-            console.log("unlock error:", err);
           }
         }
       };
@@ -247,7 +249,6 @@
       
     
       const handlePlayClick = () => {
-        unlockAudio();     // 👈 add this line
         onPlayClicked() // tells parent to broadcast play command
       }
     
