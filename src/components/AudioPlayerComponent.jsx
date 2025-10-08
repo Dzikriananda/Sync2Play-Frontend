@@ -35,7 +35,7 @@
         const delay = localStartTime - now;
       
         console.log(`before Audio will play in ${delay.toFixed(0)} ms`);
-        if(isDesktopOS) {
+        if(isDesktopOS()) {
           delay + 300;
         }
         console.log(`after Audio will play in ${delay.toFixed(0)} ms`);
