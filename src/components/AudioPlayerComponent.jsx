@@ -143,30 +143,51 @@
       }
 
       useEffect(() => {
-        function syncClock() {
+        let offsets = [];
+        let sampleCount = 0;
+        const totalSamples = 10;
+      
+        function takeSample() {
           const clientSend = Date.now();
           socket.emit("ping", clientSend);
+      
+          socket.once("pong", (serverTime, clientSendBack) => {
+            const clientReceive = Date.now();
+            const roundTrip = clientReceive - clientSendBack;
+            const latency = roundTrip / 2;
+            const estimatedServerTime = serverTime + latency;
+            const offset = estimatedServerTime - clientReceive;
+      
+            offsets.push(offset);
+            sampleCount++;
+      
+            if (sampleCount < totalSamples) {
+              setTimeout(takeSample, 50); // short gap between samples
+            } else {
+              // Median to reduce outlier impact
+              offsets.sort((a, b) => a - b);
+              const medianOffset = offsets[Math.floor(offsets.length / 2)];
+              setServerOffset(medianOffset);
+              console.log("✅ Final serverOffset:", medianOffset, "ms");
+            }
+          });
         }
       
-        socket.on("pong", (serverTime, clientSend) => {
-          const clientReceive = Date.now();
-          const roundTrip = clientReceive - clientSend;
-          const latency = roundTrip / 2;
-          const estimatedServerTime = serverTime + latency;
-          const offset = estimatedServerTime - clientReceive;
-          setServerOffset(offset);
-          console.log("⏱ serverOffset:", offset, "ms");
-        });
+        // Initial sync
+        takeSample();
       
-        // sync every 10s
-        const interval = setInterval(syncClock, 10000);
-        syncClock();
+        // Re-sync every 10s
+        const interval = setInterval(() => {
+          offsets = [];
+          sampleCount = 0;
+          takeSample();
+        }, 10000);
       
         return () => {
           clearInterval(interval);
-          socket.off("pong");
         };
       }, []);
+      
 
       
 
