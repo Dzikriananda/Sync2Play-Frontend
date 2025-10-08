@@ -90,6 +90,7 @@
         }
     
         async function onEvent(value) {
+          console.log(value);
           const command = value.command;
           const startTime = value.startTime;
           if(command === 'play') {
@@ -208,10 +209,12 @@
       // ✅ Expose control methods to parent
       useImperativeHandle(playerRef, () => ({
         playAudio() {
+          console.log('play called');
           internalRef.current.audio.current.play()
           setIsPlaying(true)
         },
         pauseAudio() {
+          console.log('pause called');
           internalRef.current.audio.current.pause()
           setIsPlaying(false)
         },
