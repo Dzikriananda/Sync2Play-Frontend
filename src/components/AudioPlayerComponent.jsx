@@ -231,18 +231,28 @@
         },
       }))
 
+
       const unlockAudio = () => {
         const audio = internalRef.current?.audio.current;
         if (audio) {
-          audio.play()
-            .then(() => {
-              audio.pause();
-              audio.currentTime = 0;
-              console.log("✅ iOS audio unlocked");
-            })
-            .catch(err => console.log("unlock error:", err));
+          const originalVolume = audio.volume;
+          audio.volume = 0; // 👈 mute before playing
+      
+          // Play silently
+          const playPromise = audio.play();
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                audio.pause();
+                audio.currentTime = 0;
+                audio.volume = originalVolume; // 👈 restore volume after pausing
+                console.log("✅ iOS audio unlocked (muted pre-play) at " + audio.currentTime + "with volume " + audio.volume);
+              })
+              .catch(err => console.log("unlock error:", err));
+          }
         }
       };
+      
       
     
       const handlePlayClick = () => {
@@ -262,6 +272,7 @@
       return (
         <div className="mt-4 flex flex-col items-center gap-3">
           <AudioPlayer
+            
             ref={internalRef}
             src={stableAudioUrl}
             style={{ pointerEvents: 'none' }}
