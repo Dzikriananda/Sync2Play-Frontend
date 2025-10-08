@@ -12,6 +12,8 @@
       const [isCountingDown, setIsIsCountingDown] = useState(false);
       const [isConnected, setIsConnected] = useState(socket.connected);
       const [isHost,setIsHost] = useState(false);
+      const [serverOffset, setServerOffset] = useState(0);
+
 
       const playerRef = useRef(null);
 
@@ -23,17 +25,21 @@
         }
       },[]);
 
-      function handlePlayCommand(startTime) {
-        printTimeStamp();
+      function handlePlayCommand(startServerTime) {
         setIsIsCountingDown(true);
-        const now = Date.now() / 1000;
-        const delay = (startTime - now) * 1000;
+      
+        const localStartTime = startServerTime + serverOffset; // adjust
+        const now = Date.now();
+        const delay = localStartTime - now;
+      
         console.log(`Audio will play in ${delay.toFixed(0)} ms`);
+      
         setTimeout(() => {
           setIsIsCountingDown(false);
           setTimeout(() => playerRef.current?.playAudio(), 100);
         }, delay);
       }
+      
 
       function isMobile() {
         const userAgent = navigator.userAgent.toLowerCase();
@@ -66,6 +72,8 @@
       function handlePauseCommand() {
         playerRef.current?.pauseAudio(); // call child’s pause
       }
+
+      
 
       useEffect(() => {
         socket.connect();
@@ -110,6 +118,32 @@
       function play() {
         socket.emit('play',data.hostToken);
       }
+
+      useEffect(() => {
+        function syncClock() {
+          const clientSend = Date.now();
+          socket.emit("ping", clientSend);
+        }
+      
+        socket.on("pong", (serverTime, clientSend) => {
+          const clientReceive = Date.now();
+          const roundTrip = clientReceive - clientSend;
+          const latency = roundTrip / 2;
+          const estimatedServerTime = serverTime + latency;
+          const offset = estimatedServerTime - clientReceive;
+          setServerOffset(offset);
+          console.log("⏱ serverOffset:", offset, "ms");
+        });
+      
+        // sync every 10s
+        const interval = setInterval(syncClock, 10000);
+        syncClock();
+      
+        return () => {
+          clearInterval(interval);
+          socket.off("pong");
+        };
+      }, []);
 
       
 
