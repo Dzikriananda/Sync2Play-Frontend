@@ -24,6 +24,7 @@
       },[]);
 
       function handlePlayCommand(startTime) {
+        printTimeStamp();
         setIsIsCountingDown(true);
         const now = Date.now() / 1000;
         const delay = (startTime - now) * 1000;
@@ -33,6 +34,34 @@
           setTimeout(() => playerRef.current?.playAudio(), 100);
         }, delay);
       }
+
+      function isMobile() {
+        const userAgent = navigator.userAgent.toLowerCase();
+        console.log(userAgent);
+        const isMobile = /iphone|ipad|ipod|android|blackberry|windows phone/g.test(userAgent);
+        return isMobile;
+
+
+      }
+
+      function printTimeStamp() {
+        var isPerformanceSupported = (
+          window.performance &&
+          window.performance.now &&
+          window.performance.timing &&
+          window.performance.timing.navigationStart
+      );
+      
+      var timeStampInMs = (
+          isPerformanceSupported ?
+          window.performance.now() +
+          window.performance.timing.navigationStart :
+          Date.now()
+      );
+          
+      console.log(timeStampInMs, Date.now());
+      }
+      
 
       function handlePauseCommand() {
         playerRef.current?.pauseAudio(); // call child’s pause
