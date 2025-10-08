@@ -63,24 +63,6 @@
         return isWideScreen && !isMobileUA && isDesktopUA;
       }
 
-      function printTimeStamp() {
-        var isPerformanceSupported = (
-          window.performance &&
-          window.performance.now &&
-          window.performance.timing &&
-          window.performance.timing.navigationStart
-      );
-      
-      var timeStampInMs = (
-          isPerformanceSupported ?
-          window.performance.now() +
-          window.performance.timing.navigationStart :
-          Date.now()
-      );
-          
-      console.log(timeStampInMs, Date.now());
-      }
-      
 
       function handlePauseCommand() {
         playerRef.current?.pauseAudio(); // call child’s pause
@@ -128,8 +110,12 @@
         };
       }, []);
 
-      function play() {
+      function sendPlayCommand() {
         socket.emit('play',data.hostToken);
+      }
+
+      function sendPauseCommand() {
+        socket.emit('pause',data.hostToken);
       }
 
       useEffect(() => {
@@ -197,7 +183,7 @@
             <h2 className="text-gray-500 mt-2">
               Number of users has joined : 0
             </h2>
-            <CustomAudioPlayer playerRef={playerRef} audioUrl={audioUrl} onPlayClicked={play} isCountingDown={isCountingDown} isHost={isHost}/>
+            <CustomAudioPlayer playerRef={playerRef} audioUrl={audioUrl} onPlayClicked={sendPlayCommand} onPauseClicked={sendPauseCommand} isCountingDown={isCountingDown} isHost={isHost}/>
             <div className="w-full h-[1px] bg-gray-300/70 rounded-full mt-2 mb-1" />
             {(isCountingDown) ? 
               <div className="flex justify-center items-center mt-4">
@@ -212,7 +198,7 @@
       );
     };
 
-    function CustomAudioPlayer({ playerRef, audioUrl, onPlayClicked, isCountingDown,isHost}) {
+    function CustomAudioPlayer({ playerRef, audioUrl, onPlayClicked, onPauseClicked,isCountingDown,isHost}) {
 
       const audioRef = useRef(audioUrl); // store the initial URL
       const internalRef = useRef(null)
@@ -263,8 +249,7 @@
       }
     
       const handlePauseClick = () => {
-        internalRef.current.audio.current.pause()
-        setIsPlaying(false)
+        onPauseClicked();
       }
     
       const handleRestart = () => {
