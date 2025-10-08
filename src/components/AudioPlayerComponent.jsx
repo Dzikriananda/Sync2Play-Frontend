@@ -230,8 +230,23 @@
           setIsPlaying(false)
         },
       }))
+
+      const unlockAudio = () => {
+        const audio = internalRef.current?.audio.current;
+        if (audio) {
+          audio.play()
+            .then(() => {
+              audio.pause();
+              audio.currentTime = 0;
+              console.log("✅ iOS audio unlocked");
+            })
+            .catch(err => console.log("unlock error:", err));
+        }
+      };
+      
     
       const handlePlayClick = () => {
+        unlockAudio();     // 👈 add this line
         onPlayClicked() // tells parent to broadcast play command
       }
     
