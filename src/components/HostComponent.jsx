@@ -24,12 +24,13 @@ function HostComponent() {
     setIsAudioReady(true);
     await new Promise(resolve => setTimeout(resolve, 2000));
     setLoading(false);
+    setIsUploadFinished(false);
   };
 
   
   return (
     <div>
-      {(loading || isUploadFinished )? (
+      {(loading || isUploadFinished) ? (
         <div>
           <LoadingComponent/>
           <HostAudioPrepComponent callBackWhenMediaReady={onAudioReady} callBackWhenUploadFinished = {() => {setIsUploadFinished(true)}}/>
