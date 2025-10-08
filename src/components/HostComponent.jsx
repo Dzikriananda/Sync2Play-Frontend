@@ -13,6 +13,8 @@ function HostComponent() {
   const [file,setFile] = useState(null);
   const [isAudioReady,setIsAudioReady] = useState(false);
   const [loading,setLoading] = useState(false);
+  const [isUploadFinished, setIsUploadFinished] = useState(false);
+
 
   const onAudioReady = async (data,fileInput) => {
     setLoading(true);
@@ -27,15 +29,15 @@ function HostComponent() {
   
   return (
     <div>
-      {loading ? (
+      {(loading || isUploadFinished )? (
         <div>
           <LoadingComponent/>
-          <HostAudioPrepComponent callBackWhenMediaReady={onAudioReady}/>
+          <HostAudioPrepComponent callBackWhenMediaReady={onAudioReady} callBackWhenUploadFinished = {() => {setIsUploadFinished(true)}}/>
         </div>
       ) : isAudioReady ? (
         <AudioPlayerComponent data={response} file={file}/>
       ) : (
-        <HostAudioPrepComponent callBackWhenMediaReady={onAudioReady}/>
+        <HostAudioPrepComponent callBackWhenMediaReady={onAudioReady} callBackWhenUploadFinished = {() => {setIsUploadFinished(true)}}/>
       )}
     </div>
   );

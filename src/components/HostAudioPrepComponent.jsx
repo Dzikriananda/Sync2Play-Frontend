@@ -5,7 +5,7 @@ import axios from "axios";
 import { Riple } from 'react-loading-indicators';
 
 
-function HostAudioPrepComponent({callBackWhenMediaReady}) {
+function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinished}) {
   const [url, setUrl] = useState("");
   const [isReady, setIsReady] = useState(false);
   const [file, setFile] = useState(null);
@@ -69,6 +69,9 @@ function HostAudioPrepComponent({callBackWhenMediaReady}) {
             const percentCompleted = Math.round(
               (progressEvent.loaded * 100) / progressEvent.total
             );
+            if(percentCompleted == 100) {
+              callBackWhenUploadFinished();
+            }
             setProgress(percentCompleted);
           },
         }
