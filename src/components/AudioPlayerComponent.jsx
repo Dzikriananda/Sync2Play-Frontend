@@ -36,7 +36,7 @@
       
         console.log(`before Audio will play in ${delay.toFixed(0)} ms`);
         if(isDesktopOS()) {
-          delay += 500;
+          delay += 550;
         }
         console.log(`after Audio will play in ${delay.toFixed(0)} ms`);
 
