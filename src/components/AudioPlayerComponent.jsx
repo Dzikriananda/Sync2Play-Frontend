@@ -36,7 +36,7 @@
       
         console.log(`before Audio will play in ${delay.toFixed(0)} ms`);
         if(isDesktopOS()) {
-          delay += 550;
+          delay += 550; //Delay karena entah kenapa di windows mulainya selalu dluan, kayaknya masih ada dikit jadi tambah menjadi 580 delaynya
         }
         console.log(`after Audio will play in ${delay.toFixed(0)} ms`);
 
@@ -205,7 +205,7 @@
               </div>
               : null
             }
-            <h2 className='text-center'>Now Playing {file.name}</h2>
+            <h2 className='text-center break-all whitespace-normal'>Now Playing {file.name}</h2>
           </motion.div>
         </div>
     
