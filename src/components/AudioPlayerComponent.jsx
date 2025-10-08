@@ -36,7 +36,7 @@
       
         console.log(`before Audio will play in ${delay.toFixed(0)} ms`);
         if(isDesktopOS()) {
-          delay += 550; //Delay karena entah kenapa di windows mulainya selalu dluan, kayaknya masih ada dikit jadi tambah menjadi 580 delaynya
+          delay += 600; //Delay karena entah kenapa di windows mulainya selalu dluan, range 500-600 u/ delay
         }
         console.log(`after Audio will play in ${delay.toFixed(0)} ms`);
 
