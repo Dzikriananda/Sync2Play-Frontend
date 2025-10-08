@@ -231,27 +231,29 @@
         },
       }))
 
-
       const unlockAudio = () => {
         const audio = internalRef.current?.audio.current;
         if (audio) {
           const originalVolume = audio.volume;
-          audio.volume = 0; // 👈 mute before playing
+          audio.volume = 0;
       
-          // Play silently
-          const playPromise = audio.play();
-          if (playPromise !== undefined) {
-            playPromise
-              .then(() => {
+          try {
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+              // 👉 Immediately schedule a pause on the next tick
+              setTimeout(() => {
                 audio.pause();
                 audio.currentTime = 0;
-                audio.volume = originalVolume; // 👈 restore volume after pausing
-                console.log("✅ iOS audio unlocked (muted pre-play) at " + audio.currentTime + "with volume " + audio.volume);
-              })
-              .catch(err => console.log("unlock error:", err));
+                audio.volume = originalVolume;
+                console.log("✅ iOS audio unlocked (forced immediate pause)");
+              }, 0);
+            }
+          } catch (err) {
+            console.log("unlock error:", err);
           }
         }
       };
+      
       
       
     
