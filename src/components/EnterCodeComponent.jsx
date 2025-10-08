@@ -123,7 +123,8 @@ export default function EnterCodeComponent({onMediaDownloaded}) {
             className="mt-6 w-full bg-gray-200 rounded-full h-6 overflow-hidden"
           >
             <motion.div
-              className={`h-6 w-[${downloadProgress}%]  bg-green-500 text-white rounded-full flex items-center justify-center`}
+              className={`h-6  bg-green-500 text-white rounded-full flex items-center justify-center`}
+              style={{ width: `${downloadProgress}%` }}
               transition={{ duration: 0.3 }}
             >
               {downloadProgress}%
