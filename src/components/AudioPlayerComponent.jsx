@@ -25,19 +25,42 @@
         }
       },[]);
 
+      // function handlePlayCommand(startServerTime) {
+      //   setIsIsCountingDown(true);
+      
+      //   const localStartTime = startServerTime + serverOffset; // adjust
+      //   const now = Date.now();
+      //   const delay = localStartTime - now;
+      
+      //   console.log(`Audio will play in ${delay.toFixed(0)} ms`);
+      
+      //   setTimeout(() => {
+      //     setIsIsCountingDown(false);
+      //     setTimeout(() => playerRef.current?.playAudio(), 100);
+      //   }, delay);
+      // }
+
       function handlePlayCommand(startServerTime) {
         setIsIsCountingDown(true);
       
-        const localStartTime = startServerTime + serverOffset; // adjust
+        // THE FIX IS HERE ▼
+        const localStartTime = startServerTime - serverOffset;
+      
         const now = Date.now();
         const delay = localStartTime - now;
       
         console.log(`Audio will play in ${delay.toFixed(0)} ms`);
-      
-        setTimeout(() => {
+        
+        if (delay > 0) {
+          setTimeout(() => {
+            setIsIsCountingDown(false);
+            playerRef.current?.playAudio(); // Play directly
+          }, delay);
+        } else {
+          // If we're already late, play immediately
           setIsIsCountingDown(false);
-          setTimeout(() => playerRef.current?.playAudio(), 100);
-        }, delay);
+          playerRef.current?.playAudio();
+        }
       }
       
 
