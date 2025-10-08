@@ -25,31 +25,19 @@
         }
       },[]);
 
-      // function handlePlayCommand(startServerTime) {
-      //   setIsIsCountingDown(true);
-      
-      //   const localStartTime = startServerTime + serverOffset; // adjust
-      //   const now = Date.now();
-      //   const delay = localStartTime - now;
-      
-      //   console.log(`Audio will play in ${delay.toFixed(0)} ms`);
-      
-      //   setTimeout(() => {
-      //     setIsIsCountingDown(false);
-      //     setTimeout(() => playerRef.current?.playAudio(), 100);
-      //   }, delay);
-      // }
-
+    
       function handlePlayCommand(startServerTime) {
         setIsIsCountingDown(true);
       
-        // THE FIX IS HERE ▼
         const localStartTime = startServerTime - serverOffset;
       
         const now = Date.now();
         const delay = localStartTime - now;
       
         console.log(`Audio will play in ${delay.toFixed(0)} ms`);
+        if(isDesktopOS) {
+          delay + 300;
+        }
         
         if (delay > 0) {
           setTimeout(() => {
@@ -64,13 +52,14 @@
       }
       
 
-      function isMobile() {
-        const userAgent = navigator.userAgent.toLowerCase();
-        console.log(userAgent);
-        const isMobile = /iphone|ipad|ipod|android|blackberry|windows phone/g.test(userAgent);
-        return isMobile;
-
-
+      function isDesktopOS(userAgent = navigator.userAgent, width = window.innerWidth) {
+        const ua = userAgent.toLowerCase();
+        console.log("is dekstop " + userAgent);
+        const isMobileUA = /mobile|android|iphone|ipad|ipod|tablet/i.test(ua);
+        const isWideScreen = width > 768;
+        const isDesktopUA = ua.includes('windows nt') || ua.includes('mac os x') || ua.includes('linux');
+    
+        return isWideScreen && !isMobileUA && isDesktopUA;
       }
 
       function printTimeStamp() {
