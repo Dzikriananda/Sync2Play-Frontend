@@ -34,10 +34,12 @@
         const now = Date.now();
         const delay = localStartTime - now;
       
-        console.log(`Audio will play in ${delay.toFixed(0)} ms`);
+        console.log(`before Audio will play in ${delay.toFixed(0)} ms`);
         if(isDesktopOS) {
           delay + 300;
         }
+        console.log(`after Audio will play in ${delay.toFixed(0)} ms`);
+
         
         if (delay > 0) {
           setTimeout(() => {
