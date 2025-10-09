@@ -32,8 +32,14 @@
         const localStartTime = startServerTime + serverOffset;      
         const now = Date.now();
         let delay = localStartTime - now;
-      
-        console.log(`before Audio will play in ${delay.toFixed(0)} ms`);
+        console.log({
+          startServerTime,
+          serverOffset,
+          localStartTime,
+          now,
+          delay
+        });
+        // console.log(`before Audio will play in ${delay.toFixed(0)} ms`);
         // if(isDesktopOS()) {
         //   delay += 600; //Delay karena entah kenapa di windows mulainya selalu dluan, range 500-600 u/ delay
         // }
@@ -125,15 +131,25 @@
             const t1 = Date.now();
             socket.emit("ping", t1);
       
-            socket.once("pong", ({ clientSendTime, serverReceiveTime, serverSendTime }) => {
-              const t4 = Date.now();
-      
-              // Compute using standard NTP formula
-              const RTT = (t4 - t1) - (serverSendTime - serverReceiveTime);
-              const offset = ((serverReceiveTime - t1) + (serverSendTime - t4)) / 2;
-      
-              resolve({ offset, RTT });
+            socket.once("pong", ({ clientSendTime: t1_serverSent, serverReceiveTime: t2, serverSendTime: t3 }) => {
+              const t4 = Date.now();     // clientReceive
+              const t1 = t1_serverSent;  // clientSend (echoed back)
+              const rtt = (t4 - t1) - (t3 - t2);
+              const offset = ((t2 - t1) + (t3 - t4)) / 2;
+            
+              const estimatedServerSend = t4 + offset; // what client's clock thinks server time is now
+              console.log({
+                t1, t2, t3, t4,
+                rtt,
+                offset,
+                estimatedServerSend,
+                serverSendTime: t3,
+                est_diff_ms: (estimatedServerSend - t3).toFixed(2) // should be ~0
+              });
+            
+              resolve({ offset, RTT: rtt });
             });
+            
           });
         }
       
