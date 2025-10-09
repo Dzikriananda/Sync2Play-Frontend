@@ -13,7 +13,6 @@
       const [isConnected, setIsConnected] = useState(socket.connected);
       const [isHost,setIsHost] = useState(false);
       const [serverOffset, setServerOffset] = useState(0);
-      const [isIOS,setIsIOS] = useState(false);
 
 
       const playerRef = useRef(null);
@@ -29,31 +28,29 @@
     
       function handlePlayCommand(startServerTime) {
         setIsIsCountingDown(true);
-        playerRef.current?.playAudio(); // Play directly
-        setIsIsCountingDown(false);
-
-        // const localStartTime = startServerTime - serverOffset;
       
-        // const now = Date.now();
-        // let delay = localStartTime - now;
+        const localStartTime = startServerTime - serverOffset;
       
-        // console.log(`before Audio will play in ${delay.toFixed(0)} ms`);
-        // // if(isDesktopOS()) {
-        // //   delay += 600; //Delay karena entah kenapa di windows mulainya selalu dluan, range 500-600 u/ delay
-        // // }
-        // console.log(`after Audio will play in ${delay.toFixed(0)} ms`);
+        const now = Date.now();
+        let delay = localStartTime - now;
+      
+        console.log(`before Audio will play in ${delay.toFixed(0)} ms`);
+        if(isDesktopOS()) {
+          delay += 600; //Delay karena entah kenapa di windows mulainya selalu dluan, range 500-600 u/ delay
+        }
+        console.log(`after Audio will play in ${delay.toFixed(0)} ms`);
 
         
-        // if (delay > 0) {
-        //   setTimeout(() => {
-        //     setIsIsCountingDown(false);
-        //     playerRef.current?.playAudio(); // Play directly
-        //   }, delay);
-        // } else {
-        //   // If we're already late, play immediately
-        //   setIsIsCountingDown(false);
-        //   playerRef.current?.playAudio();
-        // }
+        if (delay > 0) {
+          setTimeout(() => {
+            setIsIsCountingDown(false);
+            playerRef.current?.playAudio(); // Play directly
+          }, delay);
+        } else {
+          // If we're already late, play immediately
+          setIsIsCountingDown(false);
+          playerRef.current?.playAudio();
+        }
       }
       
 
@@ -65,14 +62,6 @@
     
         return isWideScreen && !isMobileUA && isDesktopUA;
       }
-
-      function checkIfDeviceIsIOS() {
-        const userAgent = navigator.userAgent;
-        const iOSRegex = /iPad|iPhone|iPod/;
-        const isIOS= iOSRegex.test(userAgent);
-        setIsIOS(isIOS);
-      }
-
 
 
       function handlePauseCommand() {
@@ -133,39 +122,41 @@
 
       async function calibrateOffset(socket, setServerOffset) {
         function measureOnce() {
-          return new Promise(resolve => {
-            const clientSend = Date.now();
-            socket.emit("ping", clientSend);
-            socket.once("pong", (serverTime, clientSendBack) => {
-              const clientReceive = Date.now();
-              const rtt = clientReceive - clientSendBack;
-              const latency = rtt / 2;
-              const estimatedServerTime = serverTime + latency;
-              const offset = estimatedServerTime - clientReceive; // server - client
-              resolve({ offset, rtt });
+          return new Promise((resolve) => {
+            const t1 = Date.now();
+            socket.emit("ping", t1);
+      
+            socket.once("pong", ({ clientSendTime, serverReceiveTime, serverSendTime }) => {
+              const t4 = Date.now();
+      
+              // Compute using standard NTP formula
+              const RTT = (t4 - t1) - (serverSendTime - serverReceiveTime);
+              const offset = ((serverReceiveTime - t1) + (serverSendTime - t4)) / 2;
+      
+              resolve({ offset, RTT });
             });
           });
         }
       
         const samples = [];
-        const N = 20; // number of pings
+        const N = 15; // number of pings
+      
         for (let i = 0; i < N; i++) {
           samples.push(await measureOnce());
-          await new Promise(r => setTimeout(r, 40));
+          await new Promise((r) => setTimeout(r, 50));
         }
-        console.log("🧭 list offseet:", samples, "ms");
-
       
-        // Sort by RTT ascending and pick the best few
-        samples.sort((a, b) => a.rtt - b.rtt);
-        const K = Math.max(3, Math.floor(N * 0.15)); // top 15% or at least 3
-        const best = samples.slice(0, K);
+        console.table(samples);
+      
+        // Keep the lowest RTTs (best samples)
+        samples.sort((a, b) => a.RTT - b.RTT);
+        const best = samples.slice(0, Math.max(3, Math.floor(N * 0.15)));
         const avgOffset = best.reduce((sum, s) => sum + s.offset, 0) / best.length;
       
         setServerOffset(avgOffset);
-        console.log("🧭 Final serverOffset (best RTT avg):", avgOffset, "ms");
-        // console.table(samples);
+        console.log("🧭 Final serverOffset (best RTT avg):", avgOffset.toFixed(2), "ms");
       }
+      
       
 
       // useEffect(() => {
@@ -233,7 +224,7 @@
             <h2 className="text-gray-500 mt-2">
               Number of users has joined : 0
             </h2>
-            <CustomAudioPlayer playerRef={playerRef} audioUrl={audioUrl} onPlayClicked={sendPlayCommand} onPauseClicked={sendPauseCommand} isCountingDown={isCountingDown} isHost={isHost} />
+            <CustomAudioPlayer playerRef={playerRef} audioUrl={audioUrl} onPlayClicked={sendPlayCommand} onPauseClicked={sendPauseCommand} isCountingDown={isCountingDown} isHost={isHost}/>
             <div className="w-full h-[1px] bg-gray-300/70 rounded-full mt-2 mb-1" />
             {(isCountingDown) ? 
               <div className="flex justify-center items-center mt-4">
@@ -269,7 +260,7 @@
         },
       }))
 
-      const unlockAudioForIOS = () => {
+      const unlockAudio = () => {
         const audio = internalRef.current?.audio.current;
         if (audio) {
           if(audio.currentTime === 0) { //Agar tidak kereset ketika resume dari pause
