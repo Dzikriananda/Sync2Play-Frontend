@@ -222,7 +222,7 @@
         async playAudio() {
           console.log('play called');
           if(isIOS && internalRef.current?.audio.current.currentTime === 0) {
-            unlockAudio();
+            await unlockAudio();
           }
           internalRef.current.audio.current.play()
           setIsPlaying(true)
