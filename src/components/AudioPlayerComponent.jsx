@@ -80,7 +80,6 @@
       
 
       useEffect(() => {
-        checkIfDeviceIsIOS();
         socket.connect();
     
         return () => {
@@ -232,7 +231,7 @@
             <h2 className="text-gray-500 mt-2">
               Number of users has joined : 0
             </h2>
-            <CustomAudioPlayer playerRef={playerRef} audioUrl={audioUrl} onPlayClicked={sendPlayCommand} onPauseClicked={sendPauseCommand} isCountingDown={isCountingDown} isHost={isHost} isIOS={isIOS}/>
+            <CustomAudioPlayer playerRef={playerRef} audioUrl={audioUrl} onPlayClicked={sendPlayCommand} onPauseClicked={sendPauseCommand} isCountingDown={isCountingDown} isHost={isHost} />
             <div className="w-full h-[1px] bg-gray-300/70 rounded-full mt-2 mb-1" />
             {(isCountingDown) ? 
               <div className="flex justify-center items-center mt-4">
@@ -247,7 +246,7 @@
       );
     };
 
-    function CustomAudioPlayer({ playerRef, audioUrl, onPlayClicked, onPauseClicked,isCountingDown,isHost,isIOS}) {
+    function CustomAudioPlayer({ playerRef, audioUrl, onPlayClicked, onPauseClicked,isCountingDown,isHost}) {
 
       const audioRef = useRef(audioUrl); // store the initial URL
       const internalRef = useRef(null)
@@ -297,9 +296,6 @@
       
     
       const handlePlayClick = () => {
-        if(isIOS) {
-          unlockAudioForIOS();
-        }
         onPlayClicked() // tells parent to broadcast play command
       }
     
