@@ -257,9 +257,6 @@
       // ✅ Expose control methods to parent
       useImperativeHandle(playerRef, () => ({
         playAudio() {
-          if(isIOS) {
-            unlockAudioForIOS();
-          }
           console.log('play called');
           internalRef.current.audio.current.play()
           setIsPlaying(true)
@@ -300,6 +297,9 @@
       
     
       const handlePlayClick = () => {
+        if(isIOS) {
+          unlockAudioForIOS();
+        }
         onPlayClicked() // tells parent to broadcast play command
       }
     
