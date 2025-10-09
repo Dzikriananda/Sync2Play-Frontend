@@ -83,6 +83,8 @@
           setTimeout(() => {}, 2000);
           setIsConnected(true);
           socket.emit('join-session', data.sessionId);
+          calibrateOffset(socket, setServerOffset);
+
         }
     
         function onDisconnect() {
@@ -119,51 +121,81 @@
         socket.emit('pause',data.hostToken);
       }
 
-      useEffect(() => {
-        let offsets = [];
-        let sampleCount = 0;
-        const totalSamples = 10;
-      
-        function takeSample() {
-          const clientSend = Date.now();
-          socket.emit("ping", clientSend);
-      
-          socket.once("pong", (serverTime, clientSendBack) => {
-            const clientReceive = Date.now();
-            const roundTrip = clientReceive - clientSendBack;
-            const latency = roundTrip / 2;
-            const estimatedServerTime = serverTime + latency;
-            const offset = estimatedServerTime - clientReceive;
-      
-            offsets.push(offset);
-            sampleCount++;
-      
-            if (sampleCount < totalSamples) {
-              setTimeout(takeSample, 50); // short gap between samples
-            } else {
-              // Median to reduce outlier impact
-              offsets.sort((a, b) => a - b);
-              const medianOffset = offsets[Math.floor(offsets.length / 2)];
-              setServerOffset(medianOffset);
-              console.log("✅ Final serverOffset:", medianOffset, "ms");
-            }
+      async function calibrateOffset(socket, setServerOffset) {
+        function measureOffset() {
+          return new Promise((resolve) => {
+            const clientSend = Date.now();
+            socket.emit("ping", clientSend);
+            socket.once("pong", (serverTime, clientSendBack) => {
+              const clientReceive = Date.now();
+              const rtt = clientReceive - clientSendBack;
+              const latency = rtt / 2;
+              const estimatedServerTime = serverTime + latency;
+              resolve(estimatedServerTime - clientReceive);
+            });
           });
         }
       
-        // Initial sync
-        takeSample();
+        const samples = [];
+        for (let i = 0; i < 15; i++) {
+          samples.push(await measureOffset());
+          await new Promise((r) => setTimeout(r, 50));
+        }
       
-        // Re-sync every 10s
-        const interval = setInterval(() => {
-          offsets = [];
-          sampleCount = 0;
-          takeSample();
-        }, 10000);
+        samples.sort((a, b) => a - b);
+        const trimmed = samples.slice(3, samples.length - 3); // throw away outliers
+        const avg =
+          trimmed.reduce((a, b) => a + b, 0) / (trimmed.length || samples.length);
       
-        return () => {
-          clearInterval(interval);
-        };
-      }, []);
+        setServerOffset(avg);
+        console.log("🧭 Calibrated offset:", avg, "ms");
+      }
+
+      // useEffect(() => {
+      //   let offsets = [];
+      //   let sampleCount = 0;
+      //   const totalSamples = 10;
+      
+      //   function takeSample() {
+      //     const clientSend = Date.now();
+      //     socket.emit("ping", clientSend);
+      
+      //     socket.once("pong", (serverTime, clientSendBack) => {
+      //       const clientReceive = Date.now();
+      //       const roundTrip = clientReceive - clientSendBack;
+      //       const latency = roundTrip / 2;
+      //       const estimatedServerTime = serverTime + latency;
+      //       const offset = estimatedServerTime - clientReceive;
+      
+      //       offsets.push(offset);
+      //       sampleCount++;
+      
+      //       if (sampleCount < totalSamples) {
+      //         setTimeout(takeSample, 50); // short gap between samples
+      //       } else {
+      //         // Median to reduce outlier impact
+      //         offsets.sort((a, b) => a - b);
+      //         const medianOffset = offsets[Math.floor(offsets.length / 2)];
+      //         setServerOffset(medianOffset);
+      //         console.log("✅ Final serverOffset:", medianOffset, "ms");
+      //       }
+      //     });
+      //   }
+      
+      //   // Initial sync
+      //   takeSample();
+      
+      //   // Re-sync every 10s
+      //   const interval = setInterval(() => {
+      //     offsets = [];
+      //     sampleCount = 0;
+      //     takeSample();
+      //   }, 10000);
+      
+      //   return () => {
+      //     clearInterval(interval);
+      //   };
+      // }, []);
       
 
       
