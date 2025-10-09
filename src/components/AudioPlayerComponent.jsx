@@ -29,16 +29,15 @@
       function handlePlayCommand(startServerTime) {
         setIsIsCountingDown(true);
       
-        const localStartTime = startServerTime - serverOffset;
-      
+        const localStartTime = startServerTime + serverOffset;      
         const now = Date.now();
         let delay = localStartTime - now;
       
         console.log(`before Audio will play in ${delay.toFixed(0)} ms`);
-        if(isDesktopOS()) {
-          delay += 600; //Delay karena entah kenapa di windows mulainya selalu dluan, range 500-600 u/ delay
-        }
-        console.log(`after Audio will play in ${delay.toFixed(0)} ms`);
+        // if(isDesktopOS()) {
+        //   delay += 600; //Delay karena entah kenapa di windows mulainya selalu dluan, range 500-600 u/ delay
+        // }
+        // console.log(`after Audio will play in ${delay.toFixed(0)} ms`);
 
         
         if (delay > 0) {
