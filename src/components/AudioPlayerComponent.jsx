@@ -29,7 +29,7 @@
       function handlePlayCommand(startServerTime) {
         setIsIsCountingDown(true);
       
-        const localStartTime = startServerTime + serverOffset;      
+        const localStartTime = startServerTime - serverOffset; 
         const now = Date.now();
         let delay = localStartTime - now;
         console.log({
@@ -39,7 +39,7 @@
           now,
           delay
         });
-        // console.log(`before Audio will play in ${delay.toFixed(0)} ms`);
+        console.log(`offset in the handleplaycommand ${serverOffset.toFixed(0)} ms`);
         // if(isDesktopOS()) {
         //   delay += 600; //Delay karena entah kenapa di windows mulainya selalu dluan, range 500-600 u/ delay
         // }
@@ -169,6 +169,7 @@
         const avgOffset = best.reduce((sum, s) => sum + s.offset, 0) / best.length;
       
         setServerOffset(avgOffset);
+        console.log(`offset when calibrate (maybe not updated yet as part of how reacts work)${serverOffset.toFixed(0)} ms`);
         console.log("🧭 Final serverOffset (best RTT avg):", avgOffset.toFixed(2), "ms");
       }
       
