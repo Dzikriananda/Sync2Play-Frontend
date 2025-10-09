@@ -12,8 +12,8 @@
       const [isCountingDown, setIsIsCountingDown] = useState(false);
       const [isConnected, setIsConnected] = useState(socket.connected);
       const [isHost,setIsHost] = useState(false);
-      const [serverOffset, setServerOffset] = useState(0);
-
+      // const [serverOffset, setServerOffset] = useState(0);
+      const serverOffsetRef = useRef(0);
 
       const playerRef = useRef(null);
 
@@ -25,38 +25,34 @@
         }
       },[]);
 
-    
       function handlePlayCommand(startServerTime) {
         setIsIsCountingDown(true);
       
-        const localStartTime = startServerTime - serverOffset; 
+        const offset = serverOffsetRef.current;
+        const localStartTime = startServerTime - offset;
         const now = Date.now();
         let delay = localStartTime - now;
+      
         console.log({
           startServerTime,
-          serverOffset,
+          serverOffset: offset,
           localStartTime,
           now,
           delay
         });
-        console.log(`offset in the handleplaycommand ${serverOffset.toFixed(0)} ms`);
-        // if(isDesktopOS()) {
-        //   delay += 600; //Delay karena entah kenapa di windows mulainya selalu dluan, range 500-600 u/ delay
-        // }
-        // console.log(`after Audio will play in ${delay.toFixed(0)} ms`);
-
-        
+        console.log(`offset in the handlePlayCommand ${offset.toFixed(0)} ms`);
+      
         if (delay > 0) {
           setTimeout(() => {
             setIsIsCountingDown(false);
-            playerRef.current?.playAudio(); // Play directly
+            playerRef.current?.playAudio();
           }, delay);
         } else {
-          // If we're already late, play immediately
           setIsIsCountingDown(false);
           playerRef.current?.playAudio();
         }
       }
+      
       
 
       function isDesktopOS(userAgent = navigator.userAgent, width = window.innerWidth) {
@@ -87,7 +83,7 @@
         async function onConnect() {
           setTimeout(() => {}, 2000);
           setIsConnected(true);
-          await calibrateOffset(socket, setServerOffset);
+          await calibrateOffset(socket, serverOffsetRef);
           socket.emit('join-session', data.sessionId);
         }
     
@@ -125,7 +121,7 @@
         socket.emit('pause',data.hostToken);
       }
 
-      async function calibrateOffset(socket, setServerOffset) {
+      async function calibrateOffset(socket, serverOffsetRef) {
         function measureOnce() {
           return new Promise((resolve) => {
             const t1 = Date.now();
@@ -168,8 +164,8 @@
         const best = samples.slice(0, Math.max(3, Math.floor(N * 0.15)));
         const avgOffset = best.reduce((sum, s) => sum + s.offset, 0) / best.length;
       
-        setServerOffset(avgOffset);
-        console.log(`offset when calibrate (maybe not updated yet as part of how reacts work)${serverOffset.toFixed(0)} ms`);
+        serverOffsetRef.current = avgOffset;
+        console.log(`offset when calibrate (maybe not updated yet as part of how reacts work)${serverOffsetRef.current.toFixed(0)} ms`);
         console.log("🧭 Final serverOffset (best RTT avg):", avgOffset.toFixed(2), "ms");
       }
       
