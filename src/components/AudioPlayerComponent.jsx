@@ -25,60 +25,33 @@
         }
       },[]);
 
-      
+    
       function handlePlayCommand(startServerTime) {
         setIsIsCountingDown(true);
       
         const localStartTime = startServerTime - serverOffset;
       
-        // Recalculate just before scheduling
         const now = Date.now();
         let delay = localStartTime - now;
       
-        if (isDesktopOS()) {
-          delay += 600; // Windows compensation
+        console.log(`before Audio will play in ${delay.toFixed(0)} ms`);
+        if(isDesktopOS()) {
+          delay += 600; //Delay karena entah kenapa di windows mulainya selalu dluan, range 500-600 u/ delay
         }
-      
-        console.log(`Audio will play in ${delay.toFixed(0)} ms`);
-      
+        console.log(`after Audio will play in ${delay.toFixed(0)} ms`);
+
+        
         if (delay > 0) {
           setTimeout(() => {
             setIsIsCountingDown(false);
-            playerRef.current?.playAudio();
+            playerRef.current?.playAudio(); // Play directly
           }, delay);
         } else {
+          // If we're already late, play immediately
           setIsIsCountingDown(false);
           playerRef.current?.playAudio();
         }
       }
-      
-
-      // function handlePlayCommand(startServerTime) {
-      //   setIsIsCountingDown(true);
-      
-      //   const localStartTime = startServerTime - serverOffset;
-      
-      //   const now = Date.now();
-      //   let delay = localStartTime - now;
-      
-      //   console.log(`before Audio will play in ${delay.toFixed(0)} ms`);
-      //   if(isDesktopOS()) {
-      //     delay += 600; //Delay karena entah kenapa di windows mulainya selalu dluan, range 500-600 u/ delay
-      //   }
-      //   console.log(`after Audio will play in ${delay.toFixed(0)} ms`);
-
-        
-      //   if (delay > 0) {
-      //     setTimeout(() => {
-      //       setIsIsCountingDown(false);
-      //       playerRef.current?.playAudio(); // Play directly
-      //     }, delay);
-      //   } else {
-      //     // If we're already late, play immediately
-      //     setIsIsCountingDown(false);
-      //     playerRef.current?.playAudio();
-      //   }
-      // }
       
 
       function isDesktopOS(userAgent = navigator.userAgent, width = window.innerWidth) {
@@ -109,6 +82,7 @@
         async function onConnect() {
           setTimeout(() => {}, 2000);
           setIsConnected(true);
+          await calibrateOffset(socket, setServerOffset);
           socket.emit('join-session', data.sessionId);
         }
     
@@ -146,51 +120,88 @@
         socket.emit('pause',data.hostToken);
       }
 
-      useEffect(() => {
-        let offsets = [];
-        let sampleCount = 0;
-        const totalSamples = 10;
-      
-        function takeSample() {
-          const clientSend = Date.now();
-          socket.emit("ping", clientSend);
-      
-          socket.once("pong", (serverTime, clientSendBack) => {
-            const clientReceive = Date.now();
-            const roundTrip = clientReceive - clientSendBack;
-            const latency = roundTrip / 2;
-            const estimatedServerTime = serverTime + latency;
-            const offset = estimatedServerTime - clientReceive;
-      
-            offsets.push(offset);
-            sampleCount++;
-      
-            if (sampleCount < totalSamples) {
-              setTimeout(takeSample, 50); // short gap between samples
-            } else {
-              // Median to reduce outlier impact
-              offsets.sort((a, b) => a - b);
-              const medianOffset = offsets[Math.floor(offsets.length / 2)];
-              setServerOffset(medianOffset);
-              console.log("✅ Final serverOffset:", medianOffset, "ms");
-            }
+      async function calibrateOffset(socket, setServerOffset) {
+        function measureOnce() {
+          return new Promise(resolve => {
+            const clientSend = Date.now();
+            socket.emit("ping", clientSend);
+            socket.once("pong", (serverTime, clientSendBack) => {
+              const clientReceive = Date.now();
+              const rtt = clientReceive - clientSendBack;
+              const latency = rtt / 2;
+              const estimatedServerTime = serverTime + latency;
+              const offset = estimatedServerTime - clientReceive; // server - client
+              resolve({ offset, rtt });
+            });
           });
         }
       
-        // Initial sync
-        takeSample();
+        const samples = [];
+        const N = 20; // number of pings
+        for (let i = 0; i < N; i++) {
+          samples.push(await measureOnce());
+          await new Promise(r => setTimeout(r, 40));
+        }
+        console.log("🧭 list offseet:", samples, "ms");
+
       
-        // Re-sync every 10s
-        const interval = setInterval(() => {
-          offsets = [];
-          sampleCount = 0;
-          takeSample();
-        }, 10000);
+        // Sort by RTT ascending and pick the best few
+        samples.sort((a, b) => a.rtt - b.rtt);
+        const K = Math.max(3, Math.floor(N * 0.15)); // top 15% or at least 3
+        const best = samples.slice(0, K);
+        const avgOffset = best.reduce((sum, s) => sum + s.offset, 0) / best.length;
       
-        return () => {
-          clearInterval(interval);
-        };
-      }, []);
+        setServerOffset(avgOffset);
+        console.log("🧭 Final serverOffset (best RTT avg):", avgOffset, "ms");
+        // console.table(samples);
+      }
+      
+
+      // useEffect(() => {
+      //   let offsets = [];
+      //   let sampleCount = 0;
+      //   const totalSamples = 10;
+      
+      //   function takeSample() {
+      //     const clientSend = Date.now();
+      //     socket.emit("ping", clientSend);
+      
+      //     socket.once("pong", (serverTime, clientSendBack) => {
+      //       const clientReceive = Date.now();
+      //       const roundTrip = clientReceive - clientSendBack;
+      //       const latency = roundTrip / 2;
+      //       const estimatedServerTime = serverTime + latency;
+      //       const offset = estimatedServerTime - clientReceive;
+      
+      //       offsets.push(offset);
+      //       sampleCount++;
+      
+      //       if (sampleCount < totalSamples) {
+      //         setTimeout(takeSample, 50); // short gap between samples
+      //       } else {
+      //         // Median to reduce outlier impact
+      //         offsets.sort((a, b) => a - b);
+      //         const medianOffset = offsets[Math.floor(offsets.length / 2)];
+      //         setServerOffset(medianOffset);
+      //         console.log("✅ Final serverOffset:", medianOffset, "ms");
+      //       }
+      //     });
+      //   }
+      
+      //   // Initial sync
+      //   takeSample();
+      
+      //   // Re-sync every 10s
+      //   const interval = setInterval(() => {
+      //     offsets = [];
+      //     sampleCount = 0;
+      //     takeSample();
+      //   }, 10000);
+      
+      //   return () => {
+      //     clearInterval(interval);
+      //   };
+      // }, []);
       
 
       
