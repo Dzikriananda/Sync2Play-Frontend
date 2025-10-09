@@ -29,29 +29,31 @@
     
       function handlePlayCommand(startServerTime) {
         setIsIsCountingDown(true);
+        playerRef.current?.playAudio(); // Play directly
+        setIsIsCountingDown(false);
+
+        // const localStartTime = startServerTime - serverOffset;
       
-        const localStartTime = startServerTime - serverOffset;
+        // const now = Date.now();
+        // let delay = localStartTime - now;
       
-        const now = Date.now();
-        let delay = localStartTime - now;
-      
-        console.log(`before Audio will play in ${delay.toFixed(0)} ms`);
-        // if(isDesktopOS()) {
-        //   delay += 600; //Delay karena entah kenapa di windows mulainya selalu dluan, range 500-600 u/ delay
-        // }
-        console.log(`after Audio will play in ${delay.toFixed(0)} ms`);
+        // console.log(`before Audio will play in ${delay.toFixed(0)} ms`);
+        // // if(isDesktopOS()) {
+        // //   delay += 600; //Delay karena entah kenapa di windows mulainya selalu dluan, range 500-600 u/ delay
+        // // }
+        // console.log(`after Audio will play in ${delay.toFixed(0)} ms`);
 
         
-        if (delay > 0) {
-          setTimeout(() => {
-            setIsIsCountingDown(false);
-            playerRef.current?.playAudio(); // Play directly
-          }, delay);
-        } else {
-          // If we're already late, play immediately
-          setIsIsCountingDown(false);
-          playerRef.current?.playAudio();
-        }
+        // if (delay > 0) {
+        //   setTimeout(() => {
+        //     setIsIsCountingDown(false);
+        //     playerRef.current?.playAudio(); // Play directly
+        //   }, delay);
+        // } else {
+        //   // If we're already late, play immediately
+        //   setIsIsCountingDown(false);
+        //   playerRef.current?.playAudio();
+        // }
       }
       
 
