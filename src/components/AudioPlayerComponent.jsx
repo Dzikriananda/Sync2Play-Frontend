@@ -14,6 +14,7 @@
       const [isHost,setIsHost] = useState(false);
       // const [serverOffset, setServerOffset] = useState(0);
       const serverOffsetRef = useRef(0);
+      const [isIOS,setIsIOS] = useState(false);
 
       const playerRef = useRef(null);
 
@@ -64,6 +65,14 @@
         return isWideScreen && !isMobileUA && isDesktopUA;
       }
 
+      function checkIfIsIOS() {
+        const ua = navigator.userAgent;
+        const os =  /iphone|ipod|ipad/i.test(ua) ||(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        console.log('device is ios : ' +  os);
+        setIsIOS(os);
+      }
+      
+
 
       function handlePauseCommand() {
         playerRef.current?.pauseAudio(); // call child’s pause
@@ -81,6 +90,7 @@
 
       useEffect(() => {
         async function onConnect() {
+          checkIfIsIOS();
           setTimeout(() => {}, 2000);
           setIsConnected(true);
           await calibrateOffset(socket, serverOffsetRef);
@@ -168,58 +178,7 @@
         console.log(`offset when calibrate (maybe not updated yet as part of how reacts work)${serverOffsetRef.current.toFixed(0)} ms`);
         console.log("🧭 Final serverOffset (best RTT avg):", avgOffset.toFixed(2), "ms");
       }
-      
-      
-
-      // useEffect(() => {
-      //   let offsets = [];
-      //   let sampleCount = 0;
-      //   const totalSamples = 10;
-      
-      //   function takeSample() {
-      //     const clientSend = Date.now();
-      //     socket.emit("ping", clientSend);
-      
-      //     socket.once("pong", (serverTime, clientSendBack) => {
-      //       const clientReceive = Date.now();
-      //       const roundTrip = clientReceive - clientSendBack;
-      //       const latency = roundTrip / 2;
-      //       const estimatedServerTime = serverTime + latency;
-      //       const offset = estimatedServerTime - clientReceive;
-      
-      //       offsets.push(offset);
-      //       sampleCount++;
-      
-      //       if (sampleCount < totalSamples) {
-      //         setTimeout(takeSample, 50); // short gap between samples
-      //       } else {
-      //         // Median to reduce outlier impact
-      //         offsets.sort((a, b) => a - b);
-      //         const medianOffset = offsets[Math.floor(offsets.length / 2)];
-      //         setServerOffset(medianOffset);
-      //         console.log("✅ Final serverOffset:", medianOffset, "ms");
-      //       }
-      //     });
-      //   }
-      
-      //   // Initial sync
-      //   takeSample();
-      
-      //   // Re-sync every 10s
-      //   const interval = setInterval(() => {
-      //     offsets = [];
-      //     sampleCount = 0;
-      //     takeSample();
-      //   }, 10000);
-      
-      //   return () => {
-      //     clearInterval(interval);
-      //   };
-      // }, []);
-      
-
-      
-
+    
     
       return (
         <div>
@@ -236,7 +195,7 @@
             <h2 className="text-gray-500 mt-2">
               Number of users has joined : 0
             </h2>
-            <CustomAudioPlayer playerRef={playerRef} audioUrl={audioUrl} onPlayClicked={sendPlayCommand} onPauseClicked={sendPauseCommand} isCountingDown={isCountingDown} isHost={isHost}/>
+            <CustomAudioPlayer playerRef={playerRef} audioUrl={audioUrl} onPlayClicked={sendPlayCommand} onPauseClicked={sendPauseCommand} isCountingDown={isCountingDown} isHost={isHost} isIOS={isIOS}/>
             <div className="w-full h-[1px] bg-gray-300/70 rounded-full mt-2 mb-1" />
             {(isCountingDown) ? 
               <div className="flex justify-center items-center mt-4">
@@ -251,7 +210,7 @@
       );
     };
 
-    function CustomAudioPlayer({ playerRef, audioUrl, onPlayClicked, onPauseClicked,isCountingDown,isHost}) {
+    function CustomAudioPlayer({ playerRef, audioUrl, onPlayClicked, onPauseClicked,isCountingDown,isHost,isIOS}) {
 
       const audioRef = useRef(audioUrl); // store the initial URL
       const internalRef = useRef(null)
@@ -260,8 +219,11 @@
     
       // ✅ Expose control methods to parent
       useImperativeHandle(playerRef, () => ({
-        playAudio() {
+        async playAudio() {
           console.log('play called');
+          if(isIOS && internalRef.current?.audio.current.currentTime === 0) {
+            unlockAudio();
+          }
           internalRef.current.audio.current.play()
           setIsPlaying(true)
         },
@@ -272,7 +234,7 @@
         },
       }))
 
-      const unlockAudio = () => {
+      const unlockAudio = async () => {
         const audio = internalRef.current?.audio.current;
         if (audio) {
           if(audio.currentTime === 0) { //Agar tidak kereset ketika resume dari pause
