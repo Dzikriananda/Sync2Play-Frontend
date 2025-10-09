@@ -13,6 +13,7 @@
       const [isConnected, setIsConnected] = useState(socket.connected);
       const [isHost,setIsHost] = useState(false);
       const [serverOffset, setServerOffset] = useState(0);
+      const [isIOS,setIsIOS] = useState(false);
 
 
       const playerRef = useRef(null);
@@ -63,6 +64,14 @@
         return isWideScreen && !isMobileUA && isDesktopUA;
       }
 
+      function checkIfDeviceIsIOS() {
+        const userAgent = navigator.userAgent;
+        const iOSRegex = /iPad|iPhone|iPod/;
+        const isIOS= iOSRegex.test(userAgent);
+        setIsIOS(isIOS);
+      }
+
+
 
       function handlePauseCommand() {
         playerRef.current?.pauseAudio(); // call child’s pause
@@ -71,6 +80,7 @@
       
 
       useEffect(() => {
+        checkIfDeviceIsIOS();
         socket.connect();
     
         return () => {
@@ -222,7 +232,7 @@
             <h2 className="text-gray-500 mt-2">
               Number of users has joined : 0
             </h2>
-            <CustomAudioPlayer playerRef={playerRef} audioUrl={audioUrl} onPlayClicked={sendPlayCommand} onPauseClicked={sendPauseCommand} isCountingDown={isCountingDown} isHost={isHost}/>
+            <CustomAudioPlayer playerRef={playerRef} audioUrl={audioUrl} onPlayClicked={sendPlayCommand} onPauseClicked={sendPauseCommand} isCountingDown={isCountingDown} isHost={isHost} isIOS={isIOS}/>
             <div className="w-full h-[1px] bg-gray-300/70 rounded-full mt-2 mb-1" />
             {(isCountingDown) ? 
               <div className="flex justify-center items-center mt-4">
@@ -237,7 +247,7 @@
       );
     };
 
-    function CustomAudioPlayer({ playerRef, audioUrl, onPlayClicked, onPauseClicked,isCountingDown,isHost}) {
+    function CustomAudioPlayer({ playerRef, audioUrl, onPlayClicked, onPauseClicked,isCountingDown,isHost,isIOS}) {
 
       const audioRef = useRef(audioUrl); // store the initial URL
       const internalRef = useRef(null)
@@ -247,6 +257,9 @@
       // ✅ Expose control methods to parent
       useImperativeHandle(playerRef, () => ({
         playAudio() {
+          if(isIOS) {
+            unlockAudioForIOS();
+          }
           console.log('play called');
           internalRef.current.audio.current.play()
           setIsPlaying(true)
@@ -258,7 +271,7 @@
         },
       }))
 
-      const unlockAudio = () => {
+      const unlockAudioForIOS = () => {
         const audio = internalRef.current?.audio.current;
         if (audio) {
           if(audio.currentTime === 0) { //Agar tidak kereset ketika resume dari pause
