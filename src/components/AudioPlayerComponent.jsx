@@ -9,6 +9,7 @@
   import CustomAlertDialog from './AlertDialog';
 
   const AudioPlayerComponent = ({data,file}) => {
+
       const audioUrl = URL.createObjectURL(file);
       const [isCountingDown, setIsIsCountingDown] = useState(false);
       const [isConnected, setIsConnected] = useState(socket.connected);
@@ -18,6 +19,10 @@
       const [isIOS,setIsIOS] = useState(false);
 
       const playerRef = useRef(null);
+
+      useEffect(() => {
+        console.log(file);
+      },[]);
 
       useEffect(() => {
         if(data.hostToken != null){
