@@ -78,6 +78,10 @@
         playerRef.current?.pauseAudio(); // call child’s pause
       }
 
+      function handleRestartCommand() {
+        playerRef.current?.restartAudio(); // call child’s restart
+      }
+
       
 
       useEffect(() => {
@@ -107,8 +111,10 @@
           const startTime = value.startTime;
           if(command === 'play') {
             handlePlayCommand(startTime);
-          } else {
+          } else if (command === 'pause') {
             handlePauseCommand();
+          } else {
+            handleRestartCommand();
           }
         }
     
@@ -129,6 +135,10 @@
 
       function sendPauseCommand() {
         socket.emit('pause',data.hostToken);
+      }
+
+      function sendRestartCommand() {
+        socket.emit('restart',data.hostToken);
       }
 
       async function calibrateOffset(socket, serverOffsetRef) {
@@ -195,7 +205,7 @@
             <h2 className="text-gray-500 mt-2">
               Number of users has joined : 0
             </h2>
-            <CustomAudioPlayer playerRef={playerRef} audioUrl={audioUrl} onPlayClicked={sendPlayCommand} onPauseClicked={sendPauseCommand} isCountingDown={isCountingDown} isHost={isHost} isIOS={isIOS}/>
+            <CustomAudioPlayer playerRef={playerRef} audioUrl={audioUrl} onPlayClicked={sendPlayCommand} onPauseClicked={sendPauseCommand} onRestartClicked={sendRestartCommand} isCountingDown={isCountingDown} isHost={isHost} isIOS={isIOS}/>
             <div className="w-full h-[1px] bg-gray-300/70 rounded-full mt-2 mb-1" />
             {(isCountingDown) ? 
               <div className="flex justify-center items-center mt-4">
@@ -210,7 +220,7 @@
       );
     };
 
-    function CustomAudioPlayer({ playerRef, audioUrl, onPlayClicked, onPauseClicked,isCountingDown,isHost,isIOS}) {
+    function CustomAudioPlayer({ playerRef, audioUrl, onPlayClicked, onPauseClicked,onRestartClicked,isCountingDown,isHost,isIOS}) {
 
       const audioRef = useRef(audioUrl); // store the initial URL
       const internalRef = useRef(null)
@@ -219,11 +229,7 @@
     
       // ✅ Expose control methods to parent
       useImperativeHandle(playerRef, () => ({
-        async playAudio() {
-          console.log('play called');
-          if(isIOS && internalRef.current?.audio.current.currentTime === 0) {
-            await unlockAudio();
-          }
+        playAudio() {
           internalRef.current.audio.current.play()
           setIsPlaying(true)
         },
@@ -232,6 +238,9 @@
           internalRef.current.audio.current.pause()
           setIsPlaying(false)
         },
+        restartAudio() {
+          internalRef.current.audio.current.currentTime = 0
+        }
       }))
 
       const unlockAudio = async () => {
@@ -258,11 +267,18 @@
           }
         }
       };
+
+      useEffect(() => {
+
+      },[])
       
       
       
     
-      const handlePlayClick = () => {
+      const handlePlayClick = async () => {
+        if(isIOS && internalRef.current?.audio.current.currentTime === 0) {
+          await unlockAudio();
+        }
         onPlayClicked() // tells parent to broadcast play command
       }
     
@@ -271,7 +287,7 @@
       }
     
       const handleRestart = () => {
-        internalRef.current.audio.current.currentTime = 0
+        onRestartClicked();
       }
     
       return (
