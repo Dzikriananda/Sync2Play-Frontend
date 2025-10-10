@@ -243,34 +243,54 @@
         }
       }))
 
+      // const unlockAudio = async () => {
+      //   const audio = internalRef.current?.audio.current;
+      //   if (audio) {
+      //     if(audio.currentTime === 0) { //Agar tidak kereset ketika resume dari pause
+      //       const originalVolume = audio.volume;
+      //       audio.volume = 0;
+        
+      //       try {
+      //         const playPromise = audio.play();
+      //         if (playPromise !== undefined) {
+      //           // 👉 Immediately schedule a pause on the next tick
+      //           setTimeout(() => {
+      //             audio.pause();
+      //             audio.currentTime = 0;
+      //             audio.volume = originalVolume;
+      //             console.log("✅ iOS audio unlocked (forced immediate pause)");
+      //           }, 0);
+      //         }
+      //       } catch (err) {
+      //         console.log("unlock error:", err);
+      //       }
+      //     }
+      //   }
+      // };
+
+      // useEffect(() => {
+
+      // },[])
+      
       const unlockAudio = async () => {
         const audio = internalRef.current?.audio.current;
-        if (audio) {
-          if(audio.currentTime === 0) { //Agar tidak kereset ketika resume dari pause
-            const originalVolume = audio.volume;
-            audio.volume = 0;
-        
-            try {
-              const playPromise = audio.play();
-              if (playPromise !== undefined) {
-                // 👉 Immediately schedule a pause on the next tick
-                setTimeout(() => {
-                  audio.pause();
-                  audio.currentTime = 0;
-                  audio.volume = originalVolume;
-                  console.log("✅ iOS audio unlocked (forced immediate pause)");
-                }, 0);
-              }
-            } catch (err) {
-              console.log("unlock error:", err);
-            }
+        if (!audio) return;
+      
+        if (audio.currentTime === 0) {
+          const originalVolume = audio.volume;
+          audio.volume = 0;
+      
+          try {
+            await audio.play(); // Wait until Safari resolves it
+            audio.pause();
+            audio.currentTime = 0;
+            audio.volume = originalVolume;
+            console.log("✅ iOS audio unlocked cleanly");
+          } catch (err) {
+            console.log("unlock error:", err);
           }
         }
       };
-
-      useEffect(() => {
-
-      },[])
       
       
       
