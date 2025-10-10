@@ -230,6 +230,14 @@
       const stableAudioUrl = audioRef.current; // use this in your AudioPlayer
       const [showDialog, setShowDialog] = useState(false);
 
+      useEffect(()=> {
+        console.log('audio url  : ' + audioUrl);
+        console.log('internal ref  :   '+ internalRef); 
+        console.log('stable url  : ' + stableAudioUrl); 
+        console.log('')
+
+      },[])
+
       // ✅ Expose control methods to parent
       useImperativeHandle(playerRef, () => ({
         playAudio() {
