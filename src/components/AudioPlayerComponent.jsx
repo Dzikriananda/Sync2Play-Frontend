@@ -21,7 +21,7 @@
       const playerRef = useRef(null);
 
       useEffect(() => {
-        console.log(file);
+        console.log('file perel brown : ' + file);
       },[]);
 
       useEffect(() => {
