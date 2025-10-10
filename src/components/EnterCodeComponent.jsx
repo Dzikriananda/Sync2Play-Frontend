@@ -56,10 +56,9 @@ export default function EnterCodeComponent({onMediaDownloaded}) {
                 filename = decodeURIComponent(filenameMatch[1]);
               }
             }
-            console.log('disposition  : ' + disposition);
-            console.log('contentType  : ' + contentType);
-            console.log('filename : ' + filename);
-            onMediaDownloaded(code,response.data);
+            //PENTING AGAR UBAH MENJADI FILE DENGAN METADATA SEPERTI TYPE, AGAR BISA DIMAINKAN DI IPHONE
+            const parsedFile = new File([response.data], filename,  { type: 'audio/mpeg' } );
+            onMediaDownloaded(code,parsedFile);
             setIsDownloading(false);
           } else {
             setIsDownloading(false);

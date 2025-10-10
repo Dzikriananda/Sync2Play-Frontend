@@ -10,8 +10,7 @@ export default function ListenerComponent() {
 
   function onMediaDownloaded(code, file) {
     setCode(code);
-    const parsedFile = new File([file], `andai aku bisa.mp3`,  { type: 'audio/mpeg' } );
-    setFile(parsedFile);
+    setFile(file);
     setIsMediaReady(true);
   }
 
