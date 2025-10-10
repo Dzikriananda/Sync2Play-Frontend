@@ -308,24 +308,35 @@
         if (audio.currentTime === 0) {
           try {
             // Use muted instead of volume for better Safari behavior
+            console.log('0');
             audio.muted = true;
+            console.log('1');
       
             // Start playback — this must happen inside a user gesture
             await audio.play();
+            console.log('2');
             console.log('🔓 Silent playback started for unlock');
       
             // Give Safari a tiny moment to actually start before stopping
             await new Promise((resolve) => setTimeout(resolve, 500));
+            console.log('3');
       
             audio.pause();
-            audio.currentTime = 0;
+            console.log('4');
+            audio.currentTime = 0;            
+            console.log('5');
+
             audio.muted = false;
+            console.log('6');
       
             // Force Safari to fully reset the buffer position
             audio.load();
-      
+            console.log('7');
+
             setIsSoundUnlocked(true);
             setIOSSoundPrepLoading(false);
+            console.log('8');
+
             console.log('✅ iOS audio unlocked and reset cleanly');
           } catch (err) {
             console.log('unlock error:', err);
