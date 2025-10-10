@@ -46,6 +46,19 @@ export default function EnterCodeComponent({onMediaDownloaded}) {
             }
           );
           if(response.status == 200) {
+            const disposition = response.headers['content-disposition'];
+            const contentType = response.headers['content-type'];
+
+            let filename = 'audio.mp3'; // default fallback
+            if (disposition) {
+              const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
+              if (filenameMatch && filenameMatch[1]) {
+                filename = decodeURIComponent(filenameMatch[1]);
+              }
+            }
+            console.log('disposition  : ' + disposition);
+            console.log('contentType  : ' + contentType);
+            console.log('filename : ' + filename);
             onMediaDownloaded(code,response.data);
             setIsDownloading(false);
           } else {

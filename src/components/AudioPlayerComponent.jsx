@@ -267,35 +267,6 @@
       }, [isIOS]);
       
 
-      // const unlockAudio = async () => {
-      //   const audio = internalRef.current?.audio.current;
-      //   if (audio) {
-      //     if(audio.currentTime === 0) { //Agar tidak kereset ketika resume dari pause
-      //       const originalVolume = audio.volume;
-      //       audio.volume = 0;
-        
-      //       try {
-      //         const playPromise = audio.play();
-      //         if (playPromise !== undefined) {
-      //           // 👉 Immediately schedule a pause on the next tick
-      //           setTimeout(() => {
-      //             audio.pause();
-      //             audio.currentTime = 0;
-      //             audio.volume = originalVolume;
-      //             console.log("✅ iOS audio unlocked (forced immediate pause)");
-      //           }, 0);
-      //         }
-      //       } catch (err) {
-      //         console.log("unlock error:", err);
-      //       }
-      //     }
-      //   }
-      // };
-
-      // useEffect(() => {
-
-      // },[])
-      
       const unlockAudio = async () => {
         setIOSSoundPrepLoading(true);
         const audio = internalRef.current?.audio.current;
@@ -312,10 +283,7 @@
       
         if (audio.currentTime === 0) {
           try {
-            // Use muted instead of volume for better Safari behavior
-            console.log('0');
             audio.muted = true;
-            console.log('state : ' + audio.readyState);
             if (audio.readyState < 1) {
               console.log('not ready')
               await new Promise((resolve) => {
@@ -323,23 +291,18 @@
               });
             }
 
-
             // Start playback — this must happen inside a user gesture
             await audio.play();
             console.log('2');
             console.log('🔓 Silent playback started for unlock');
       
             // Give Safari a tiny moment to actually start before stopping
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            console.log('3');
-      
+            await new Promise((resolve) => setTimeout(resolve, 500));      
             audio.pause();
-            console.log('4');
             audio.currentTime = 0;            
             console.log('5');
 
             audio.muted = false;
-            console.log('6');
       
             // Force Safari to fully reset the buffer position
             audio.load();
@@ -347,83 +310,13 @@
 
             setIsSoundUnlocked(true);
             setIOSSoundPrepLoading(false);
-            console.log('8');
-
-            console.log('✅ iOS audio unlocked and reset cleanly');
           } catch (err) {
             console.log('unlock error:', err);
           }
         }
       };
 
-      // const unlockAudio = async () => {
-      //   setIOSSoundPrepLoading(true);
-      //   const audio = internalRef.current?.audio.current;
-      //   if (!audio) return;
       
-      //   if (!audio.src || audio.src.length === 0) {
-      //     console.warn("Audio src not set yet. Skipping unlock.");
-      //     setIOSSoundPrepLoading(false);
-      //     return;
-      //   }
-      //   if (!document.body.contains(audio)) {
-      //     console.warn("Audio element not attached to DOM yet");
-      //     setIOSSoundPrepLoading(false);
-      //     return;
-      //   }
-      
-      //   try {
-      //     console.log('[unlock] start');
-      
-      //     // ✅ Make sure preload is enabled
-      //     audio.preload = 'auto';
-
-      //     audio.addEventListener('loadedmetadata', () => {
-      //       console.log('✅ Metadata parsed, duration:', audio.duration);
-      //     }, { once: true });
-      
-      //     // ✅ Wait until metadata is available
-      //     console.log('ready state : ', + audio.readyState);
-      //     if (audio.readyState < 1) {
-      //       console.log('[unlock] waiting for metadata...');
-      //       await new Promise((resolve, reject) => {
-      //         const onMeta = () => {
-      //           console.log('[unlock] metadata loaded');
-      //           resolve();
-      //         };
-      //         audio.addEventListener('loadedmetadata', onMeta, { once: true });
-      //         // Safety timeout
-      //         setTimeout(() => reject(new Error('Timeout waiting for metadata')), 5000);
-      //       });
-      //     }
-      
-      //     // ✅ Extra step for iOS: force buffering a bit
-      //     await new Promise((resolve) => setTimeout(resolve, 300));
-      
-      //     // ✅ Mute before unlock
-      //     audio.muted = true;
-      //     console.log('[unlock] calling play()');
-      //     const playPromise = audio.play();
-      
-      //     if (playPromise !== undefined) {
-      //       await playPromise;
-      //     }
-      
-      //     console.log('[unlock] playback started (muted)');
-      //     await new Promise((resolve) => setTimeout(resolve, 400));
-      
-      //     audio.pause();
-      //     audio.currentTime = 0;
-      //     audio.muted = false;
-      //     audio.load(); // force reset
-      //     setIsSoundUnlocked(true);
-      //     console.log('[unlock] ✅ finished');
-      //   } catch (err) {
-      //     console.log('[unlock] error', err);
-      //   } finally {
-      //     setIOSSoundPrepLoading(false);
-      //   }
-      // };
       
       
       
