@@ -383,6 +383,7 @@
           }, { once: true });
       
           // ✅ Wait until metadata is available
+          console.log('ready state : ', + audio.readyState);
           if (audio.readyState < 1) {
             console.log('[unlock] waiting for metadata...');
             await new Promise((resolve, reject) => {
