@@ -6,6 +6,7 @@
   import { socket } from '../socket';
   import { OrbitProgress} from 'react-loading-indicators';
   import LoadingComponent from './LoadingComponent';
+  import CustomAlertDialog from './AlertDialog';
 
   const AudioPlayerComponent = ({data,file}) => {
       const audioUrl = URL.createObjectURL(file);
@@ -225,8 +226,10 @@
       const audioRef = useRef(audioUrl); // store the initial URL
       const internalRef = useRef(null)
       const [isPlaying, setIsPlaying] = useState(false)
+      const [isSoundUnlocked,setIsSoundUnlocked] = useState(false);
       const stableAudioUrl = audioRef.current; // use this in your AudioPlayer
-    
+      const [showDialog, setShowDialog] = useState(false);
+      
       // ✅ Expose control methods to parent
       useImperativeHandle(playerRef, () => ({
         playAudio() {
@@ -242,6 +245,13 @@
           internalRef.current.audio.current.currentTime = 0
         }
       }))
+
+      useEffect(() => {
+        if (isIOS) {
+          setShowDialog(true); // open the dialog automatically
+        }
+      }, [isIOS]);
+      
 
       // const unlockAudio = async () => {
       //   const audio = internalRef.current?.audio.current;
@@ -279,12 +289,12 @@
         if (audio.currentTime === 0) {
           const originalVolume = audio.volume;
           audio.volume = 0;
-      
           try {
             await audio.play(); // Wait until Safari resolves it
             audio.pause();
             audio.currentTime = 0;
             audio.volume = originalVolume;
+            setIsSoundUnlocked(true);
             console.log("✅ iOS audio unlocked cleanly");
           } catch (err) {
             console.log("unlock error:", err);
@@ -296,9 +306,6 @@
       
     
       const handlePlayClick = async () => {
-        if(isIOS && internalRef.current?.audio.current.currentTime === 0) {
-          await unlockAudio();
-        }
         onPlayClicked() // tells parent to broadcast play command
       }
     
@@ -363,7 +370,18 @@
               </button>
             </div> : null
         }
+          <CustomAlertDialog
+            open={showDialog}
+            onClose={() => setShowDialog(false)}
+            onPressed={() => {
+              console.log("User pressed Unlock");
+              // maybe trigger something like playerRef.current?.playAudio();
+            }}
+            title="Unlock music"
+            content="Unlock for play"
+          />
         </div>
+        
       )
     }
 
