@@ -5,7 +5,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
-function CustomAlertDialog({ open, onClose, onPressed, title, content,buttonTitle }) {
+function CustomAlertDialog({ open, onClose, onPressed, title, content,buttonTitle,isLoading }) {
   const handleClose = async () => {
     await onPressed?.();
     onClose?.();
@@ -14,7 +14,6 @@ function CustomAlertDialog({ open, onClose, onPressed, title, content,buttonTitl
   return (
     <Dialog
       open={open}
-      onClose={handleClose}
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
@@ -25,8 +24,11 @@ function CustomAlertDialog({ open, onClose, onPressed, title, content,buttonTitl
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} autoFocus>
-          {buttonTitle}
+        <Button onClick={handleClose}>
+          {
+            isLoading ? <div className="w-8 h-8 border-3 border-black border-t-transparent rounded-full animate-spin"/> 
+            : buttonTitle
+          }
         </Button>
       </DialogActions>
     </Dialog>

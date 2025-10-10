@@ -229,6 +229,7 @@
       const [isSoundUnlocked,setIsSoundUnlocked] = useState(false);
       const stableAudioUrl = audioRef.current; // use this in your AudioPlayer
       const [showDialog, setShowDialog] = useState(false);
+      const [showIOSSoundPrepLoading,setIOSSoundPrepLoading] = useState(false);
 
       useEffect(()=> {
         console.log('audio url  : ' + audioUrl);
@@ -291,24 +292,38 @@
       // },[])
       
       const unlockAudio = async () => {
+        setIOSSoundPrepLoading(true);
         const audio = internalRef.current?.audio.current;
         if (!audio) return;
       
         if (audio.currentTime === 0) {
-          const originalVolume = audio.volume;
-          audio.volume = 0;
           try {
-            await audio.play(); // Wait until Safari resolves it
+            // Use muted instead of volume for better Safari behavior
+            audio.muted = true;
+      
+            // Start playback — this must happen inside a user gesture
+            await audio.play();
+            console.log('🔓 Silent playback started for unlock');
+      
+            // Give Safari a tiny moment to actually start before stopping
+            await new Promise((resolve) => setTimeout(resolve, 500));
+      
             audio.pause();
             audio.currentTime = 0;
-            audio.volume = originalVolume;
+            audio.muted = false;
+      
+            // Force Safari to fully reset the buffer position
+            audio.load();
+      
             setIsSoundUnlocked(true);
-            console.log("✅ iOS audio unlocked cleanly");
+            setIOSSoundPrepLoading(false);
+            console.log('✅ iOS audio unlocked and reset cleanly');
           } catch (err) {
-            console.log("unlock error:", err);
+            console.log('unlock error:', err);
           }
         }
       };
+      
       
       
       
@@ -387,6 +402,7 @@
               title="Enable Audio Playback"
               content="Tap “Allow” so your browser can play music automatically."
               buttonTitle="Allow"
+              isLoading={showIOSSoundPrepLoading}
             />
             : null
           }
