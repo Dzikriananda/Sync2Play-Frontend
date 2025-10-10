@@ -295,6 +295,15 @@
         setIOSSoundPrepLoading(true);
         const audio = internalRef.current?.audio.current;
         if (!audio) return;
+
+        if (!audio.src || audio.src.length === 0) {
+          console.warn("Audio src not set yet. Skipping unlock.");
+          return;
+        }
+        if (!audio || !document.body.contains(audio)) {
+          console.warn("Audio element not attached to DOM yet");
+          return;
+        }        
       
         if (audio.currentTime === 0) {
           try {
