@@ -373,7 +373,7 @@
             customVolumeControls={[]}
           />
     
-        {isHost ? 
+        {true ? 
           <div className="flex gap-2">
             {!isPlaying ? (
               <button
