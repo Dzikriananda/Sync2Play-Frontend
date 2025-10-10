@@ -267,94 +267,94 @@
       }, [isIOS]);
       
 
-      const unlockAudio = async () => {
-        const audio = internalRef.current?.audio.current;
-        if (audio) {
-          if(audio.currentTime === 0) { //Agar tidak kereset ketika resume dari pause
-            const originalVolume = audio.volume;
-            audio.volume = 0;
-        
-            try {
-              const playPromise = audio.play();
-              if (playPromise !== undefined) {
-                // 👉 Immediately schedule a pause on the next tick
-                setTimeout(() => {
-                  audio.pause();
-                  audio.currentTime = 0;
-                  audio.volume = originalVolume;
-                  console.log("✅ iOS audio unlocked (forced immediate pause)");
-                }, 0);
-              }
-            } catch (err) {
-              console.log("unlock error:", err);
-            }
-          }
-        }
-      };
-
-      useEffect(() => {
-
-      },[])
-      
       // const unlockAudio = async () => {
-      //   setIOSSoundPrepLoading(true);
       //   const audio = internalRef.current?.audio.current;
-      //   if (!audio) return;
-
-      //   if (!audio.src || audio.src.length === 0) {
-      //     console.warn("Audio src not set yet. Skipping unlock.");
-      //     return;
-      //   }
-      //   if (!audio || !document.body.contains(audio)) {
-      //     console.warn("Audio element not attached to DOM yet");
-      //     return;
-      //   }        
-      
-      //   if (audio.currentTime === 0) {
-      //     try {
-      //       // Use muted instead of volume for better Safari behavior
-      //       console.log('0');
-      //       audio.muted = true;
-      //       console.log('state : ' + audio.readyState);
-      //       if (audio.readyState < 1) {
-      //         console.log('not ready')
-      //         await new Promise((resolve) => {
-      //           audio.addEventListener('loadedmetadata', resolve, { once: true });
-      //         });
+      //   if (audio) {
+      //     if(audio.currentTime === 0) { //Agar tidak kereset ketika resume dari pause
+      //       const originalVolume = audio.volume;
+      //       audio.volume = 0;
+        
+      //       try {
+      //         const playPromise = audio.play();
+      //         if (playPromise !== undefined) {
+      //           // 👉 Immediately schedule a pause on the next tick
+      //           setTimeout(() => {
+      //             audio.pause();
+      //             audio.currentTime = 0;
+      //             audio.volume = originalVolume;
+      //             console.log("✅ iOS audio unlocked (forced immediate pause)");
+      //           }, 0);
+      //         }
+      //       } catch (err) {
+      //         console.log("unlock error:", err);
       //       }
-
-
-      //       // Start playback — this must happen inside a user gesture
-      //       await audio.play();
-      //       console.log('2');
-      //       console.log('🔓 Silent playback started for unlock');
-      
-      //       // Give Safari a tiny moment to actually start before stopping
-      //       await new Promise((resolve) => setTimeout(resolve, 500));
-      //       console.log('3');
-      
-      //       audio.pause();
-      //       console.log('4');
-      //       audio.currentTime = 0;            
-      //       console.log('5');
-
-      //       audio.muted = false;
-      //       console.log('6');
-      
-      //       // Force Safari to fully reset the buffer position
-      //       audio.load();
-      //       console.log('7');
-
-      //       setIsSoundUnlocked(true);
-      //       setIOSSoundPrepLoading(false);
-      //       console.log('8');
-
-      //       console.log('✅ iOS audio unlocked and reset cleanly');
-      //     } catch (err) {
-      //       console.log('unlock error:', err);
       //     }
       //   }
       // };
+
+      // useEffect(() => {
+
+      // },[])
+      
+      const unlockAudio = async () => {
+        setIOSSoundPrepLoading(true);
+        const audio = internalRef.current?.audio.current;
+        if (!audio) return;
+
+        if (!audio.src || audio.src.length === 0) {
+          console.warn("Audio src not set yet. Skipping unlock.");
+          return;
+        }
+        if (!audio || !document.body.contains(audio)) {
+          console.warn("Audio element not attached to DOM yet");
+          return;
+        }        
+      
+        if (audio.currentTime === 0) {
+          try {
+            // Use muted instead of volume for better Safari behavior
+            console.log('0');
+            audio.muted = true;
+            console.log('state : ' + audio.readyState);
+            if (audio.readyState < 1) {
+              console.log('not ready')
+              await new Promise((resolve) => {
+                audio.addEventListener('loadedmetadata', resolve, { once: true });
+              });
+            }
+
+
+            // Start playback — this must happen inside a user gesture
+            await audio.play();
+            console.log('2');
+            console.log('🔓 Silent playback started for unlock');
+      
+            // Give Safari a tiny moment to actually start before stopping
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            console.log('3');
+      
+            audio.pause();
+            console.log('4');
+            audio.currentTime = 0;            
+            console.log('5');
+
+            audio.muted = false;
+            console.log('6');
+      
+            // Force Safari to fully reset the buffer position
+            audio.load();
+            console.log('7');
+
+            setIsSoundUnlocked(true);
+            setIOSSoundPrepLoading(false);
+            console.log('8');
+
+            console.log('✅ iOS audio unlocked and reset cleanly');
+          } catch (err) {
+            console.log('unlock error:', err);
+          }
+        }
+      };
 
       // const unlockAudio = async () => {
       //   setIOSSoundPrepLoading(true);
