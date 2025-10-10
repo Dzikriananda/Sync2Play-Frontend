@@ -5,9 +5,9 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
-function CustomAlertDialog({ open, onClose, onPressed, title, content }) {
-  const handleClose = () => {
-    onPressed?.();
+function CustomAlertDialog({ open, onClose, onPressed, title, content,buttonTitle }) {
+  const handleClose = async () => {
+    await onPressed?.();
     onClose?.();
   };
 
@@ -26,7 +26,7 @@ function CustomAlertDialog({ open, onClose, onPressed, title, content }) {
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} autoFocus>
-          Unlock
+          {buttonTitle}
         </Button>
       </DialogActions>
     </Dialog>

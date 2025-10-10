@@ -229,7 +229,7 @@
       const [isSoundUnlocked,setIsSoundUnlocked] = useState(false);
       const stableAudioUrl = audioRef.current; // use this in your AudioPlayer
       const [showDialog, setShowDialog] = useState(false);
-      
+
       // ✅ Expose control methods to parent
       useImperativeHandle(playerRef, () => ({
         playAudio() {
@@ -370,16 +370,18 @@
               </button>
             </div> : null
         }
-          <CustomAlertDialog
-            open={showDialog}
-            onClose={() => setShowDialog(false)}
-            onPressed={() => {
-              console.log("User pressed Unlock");
-              // maybe trigger something like playerRef.current?.playAudio();
-            }}
-            title="Unlock music"
-            content="Unlock for play"
-          />
+          {
+          (isIOS) ?  
+            <CustomAlertDialog
+              open={showDialog}
+              onClose={() => setShowDialog(false)}
+              onPressed={unlockAudio}
+              title="Enable Audio Playback"
+              content="Tap “Allow” so your browser can play music automatically."
+              buttonTitle="Allow"
+            />
+            : null
+          }
         </div>
         
       )
