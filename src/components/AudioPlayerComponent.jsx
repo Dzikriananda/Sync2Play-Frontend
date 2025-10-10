@@ -310,9 +310,13 @@
             // Use muted instead of volume for better Safari behavior
             console.log('0');
             audio.muted = true;
-            console.log('1 and waiting for dummy wait');
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-            console.log('finished for dummy wait');
+            console.log('state : ' + audio.readyState);
+            if (audio.readyState < 1) {
+              console.log('not ready')
+              await new Promise((resolve) => {
+                audio.addEventListener('loadedmetadata', resolve, { once: true });
+              });
+            }
 
 
             // Start playback — this must happen inside a user gesture
