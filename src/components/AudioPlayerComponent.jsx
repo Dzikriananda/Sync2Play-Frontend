@@ -28,7 +28,8 @@
         if(data.hostToken != null){
           setIsHost(true);
         } else {
-          setIsHost(false);
+          setIsHost(true);
+          // setIsHost(false);
         }
       },[]);
 
