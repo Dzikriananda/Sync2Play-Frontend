@@ -311,7 +311,8 @@
             console.log('0');
             audio.muted = true;
             console.log('1');
-      
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+
             // Start playback — this must happen inside a user gesture
             await audio.play();
             console.log('2');
@@ -373,7 +374,7 @@
             customVolumeControls={[]}
           />
     
-        {true ? 
+        {isHost ? 
           <div className="flex gap-2">
             {!isPlaying ? (
               <button
