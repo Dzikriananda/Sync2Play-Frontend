@@ -377,6 +377,10 @@
       
           // ✅ Make sure preload is enabled
           audio.preload = 'auto';
+
+          audio.addEventListener('loadedmetadata', () => {
+            console.log('✅ Metadata parsed, duration:', audio.duration);
+          }, { once: true });
       
           // ✅ Wait until metadata is available
           if (audio.readyState < 1) {
