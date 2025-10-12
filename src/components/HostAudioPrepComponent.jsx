@@ -31,6 +31,11 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
     return false;
   }
 
+  function resetUploadMedia() {
+    setIsMediaValid(null);
+    setFile(null);
+  }
+
   const isValidUrl = (string) => {
     console.log(string);
     try {
@@ -51,6 +56,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
           setUrlError({error : true, message : "Url is Not Valid"});
         } else {
           try {
+            resetUploadMedia();
             setUrlCheckLoading(true);
             const response = await axios.get(
               `${baseUrl}/api/audio/youtube/info`,
@@ -71,6 +77,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
   }  
 
   const onFileChoosen = (e) => {
+    setYoutubeData(null);
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       const sizeInKB = (selectedFile.size / 1024).toFixed(2);
