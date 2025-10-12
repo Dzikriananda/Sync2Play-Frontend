@@ -105,6 +105,7 @@ export default function EnterCodeComponent({onMediaDownloaded}) {
     }
   }  
 
+
   return (
     <motion.div className='min-w-96 min-h-64 bg-white rounded-2xl shadow-2xs p-8'>
       <h1 className='text-3xl font-extrabold text-gray-800'>Sync2Play</h1>

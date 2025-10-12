@@ -7,9 +7,13 @@ import { Riple } from 'react-loading-indicators';
 
 function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinished}) {
   const [url, setUrl] = useState("");
+  const [urlError,setUrlError] = useState({error : false, message: ""});
+  const [urlCheckLoading,setUrlCheckLoading] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [youtubeData,setYoutubeData] = useState(null);
   const [file, setFile] = useState(null);
   const [progress, setProgress] = useState(0);
+  const [isUploading,setIsUploading] = useState(false);
   const [isMediaValid, setIsMediaValid] = useState(null);
   const baseUrl = import.meta.env.VITE_BASE_API_URL;
 
@@ -26,6 +30,45 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
     }
     return false;
   }
+
+  const isValidUrl = (string) => {
+    console.log(string);
+    try {
+      new URL(string);
+      console.log('url valid');
+      return true;
+    } catch (_) {
+      console.log('url not valid');
+      return false;
+    }
+  };
+
+  
+  async function checkUrl() {
+      if(!isUploading) {
+        setUrlError({error : false, message : ""});
+        if(!isValidUrl(url)) {
+          setUrlError({error : true, message : "Url is Not Valid"});
+        } else {
+          try {
+            setUrlCheckLoading(true);
+            const response = await axios.get(
+              `${baseUrl}/api/audio/youtube/info`,
+              {
+                params: {videoId : url}
+              }
+            );
+            setUrlCheckLoading(false);
+            if(response.status == 200) {
+              setYoutubeData(response.data);
+            } 
+          } catch(e) {
+            setUrlCheckLoading(false);
+            setUrlError({error : true, message : "An error has occured. Try again."});
+          }
+        }
+      }
+  }  
 
   const onFileChoosen = (e) => {
     const selectedFile = e.target.files[0];
@@ -55,33 +98,37 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
   };
 
   const onFileUpload = async () => {
-    console.log("try to uploading file....");
-    try {
-      const formData = new FormData();
-      formData.append("audio", file, file.name);
-
-      const response = await axios.post(
-        `${baseUrl}/api/audio/upload`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            if(percentCompleted == 100) {
-              callBackWhenUploadFinished();
-            }
-            setProgress(percentCompleted);
-          },
+    if(!isUploading) {
+      setIsUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append("audio", file, file.name);
+  
+        const response = await axios.post(
+          `${baseUrl}/api/audio/upload`,
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+            onUploadProgress: (progressEvent) => {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              if(percentCompleted == 100) {
+                callBackWhenUploadFinished();
+              }
+              setProgress(percentCompleted);
+            },
+          }
+        );
+        if (response.status === 200) {
+          setIsUploading(false);
+          callBackWhenMediaReady(response.data,file);
         }
-      );
-      if (response.status === 200) {
-        callBackWhenMediaReady(response.data,file);
+      } catch (error) {
+        setIsUploading(false);
+        setProgress(0);
+        console.error("❌ Upload failed:", error);
       }
-    } catch (error) {
-      setProgress(0);
-      console.error("❌ Upload failed:", error);
     }
   };
 
@@ -100,16 +147,21 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
       <input
         className="mt-1 border border-gray-300 rounded-lg w-full h-9 px-2 shadow-md"
         type="text"
+        onChange={(e) => {setUrl(e.target.value)}}
         placeholder="e.g., https://dreamybull.com/song.mp3"
       />
-
+      {
+        (urlError.error) ? <p className='text-red-500 text-sm ml-3 mt-1'>{urlError.message}</p> :  null
+      }
       <div className="h-3" />
       <div className="flex flex-row">
         <div
-          className="w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 cursor-pointer"
-          onClick={() => setIsReady(!isReady)}
+          className="w-full flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 cursor-pointer"
+          onClick={checkUrl}
         >
-          Load URL
+          {
+            urlCheckLoading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"/> : <h2>Load URL</h2>
+          }
         </div>
         <div className="w-3" />
         <FileInput onFileChoosen={onFileChoosen} />
@@ -174,6 +226,39 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
           </motion.div>
         )}
       </AnimatePresence>
+      {
+        (youtubeData != null) ? 
+        <div>
+            <div className=" mt-4 mb-4 p-3 border border-gray-200 rounded-lg flex items-center space-x-3 bg-gray-50 shadow-inner mb-6">
+              <img
+                src={youtubeData.thumbnailUrl}
+                alt="Cover Art"
+                className="h-36 max-w-64 rounded-md object-cover"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-800 ">
+                  {youtubeData.title}
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  {youtubeData.channelName}
+                </p>
+                <p className="text-sm text-gray-500 font-medium">
+                  {youtubeData.length}
+                </p>
+              </div>
+              
+              
+            </div>
+              <div
+              onClick={() => {}}
+              className="w-full text-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 cursor-pointer"
+            >
+            Use this audio
+          </div>
+        </div>
+      
+        : null
+      }
     </motion.div>
   );
 }
