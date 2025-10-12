@@ -233,7 +233,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
               <img
                 src={youtubeData.thumbnailUrl}
                 alt="Cover Art"
-                className="h-36 max-w-64 rounded-md object-cover"
+                className="h-36 w-auto max-w-full sm:max-w-64 rounded-md object-cover"
               />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-800 ">
