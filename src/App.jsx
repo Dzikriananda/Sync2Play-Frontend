@@ -72,7 +72,7 @@ function App() {
   };
 
   return (
-    <div className='h-dvh w-screen  flex justify-center items-center p-4 md:p-0'>
+    <div className='h-dvh w-screen flex justify-center items-center p-4 md:p-2'>
         <img
           src={bg}
           alt="background"
