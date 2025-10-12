@@ -72,7 +72,7 @@ function App() {
   };
 
   return (
-    <div className='h-dvh w-screen flex justify-center items-center p-4 md:p-2'>
+    <div className='h-dvh w-screen flex justify-center items-center p-4 md:p-0 '>
         <img
           src={bg}
           alt="background"
@@ -90,7 +90,7 @@ function App() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -30 }}
           transition={{ duration: 0.4 }}
-          className=" z-10 w-full flex justify-center items-center"
+          className=" z-10 w-full flex justify-center items-center mx-"
         >
           {content}
         </motion.div>
