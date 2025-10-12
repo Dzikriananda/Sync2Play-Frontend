@@ -229,7 +229,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
       {
         (youtubeData != null) ? 
         <div>
-            <div className="mt-4p-3 border border-gray-200 rounded-lg flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-3 bg-gray-50 shadow-inner mb-6">              <img
+            <div className="mt-4 p-3 border border-gray-200 rounded-lg flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-3 bg-gray-50 shadow-inner mb-6">              <img
                 src={youtubeData.thumbnailUrl}
                 alt="Cover Art"
                 className="h-36 w-auto max-w-full sm:max-w-64 rounded-md object-cover"
