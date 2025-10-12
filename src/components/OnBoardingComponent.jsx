@@ -1,6 +1,6 @@
 function OnBoardingComponent({onRoleClick}) {
     return (
-      <div className='min-w-96 min-h-60 bg-white rounded-2xl shadow-2xs p-8'>
+      <div className='md:min-w-96  h-full bg-white rounded-2xl shadow-2xs p-8'>
         <h1 className='text-3xl font-extrabold text-gray-800'>Welcome to Sync2Play </h1>
         <h2 className=' text-gray-500 mt-2 text-xl mb-16'>Are you the host or the listener?</h2>
         <div className='flex flex-row'>

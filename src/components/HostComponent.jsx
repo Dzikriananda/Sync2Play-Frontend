@@ -31,7 +31,7 @@ function HostComponent() {
   return (
     <div>
       {(loading || isUploadFinished) ? (
-        <div className=' overflow-y-auto'>
+        <div>
           <LoadingComponent/>
           <HostAudioPrepComponent callBackWhenMediaReady={onAudioReady} callBackWhenUploadFinished = {() => {setIsUploadFinished(true)}}/>
         </div>

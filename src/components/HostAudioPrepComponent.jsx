@@ -136,7 +136,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
     <motion.div
       layout
       transition={{ layout: { duration: 0.4, ease: "easeInOut" } }}
-      className="max-w-full sm:max-w-[500px] sm:mx-0 mx-1 max-h-[calc(100vh-2rem)] bg-white rounded-2xl shadow-2xs p-8"
+      className="max-w-full sm:max-w-[500px] sm:mx-0 max-h-[calc(100vh-2rem)] bg-white rounded-2xl shadow-2xs p-8"
     >
       <h1 className="text-3xl font-extrabold text-gray-800">Sync2Play</h1>
       <h2 className="text-gray-500 mt-2">
@@ -237,6 +237,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-800 break-words">
                   {youtubeData.title}
+                  
                 </p>
                 <p className="text-xs text-gray-500 truncate">
                   {youtubeData.channelName}
@@ -250,7 +251,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
             </div>
               <div
               onClick={() => {}}
-              className="w-full text-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 cursor-pointer"
+              className="w-full  text-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 cursor-pointer"
             >
             Use this audio
           </div>
