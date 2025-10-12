@@ -136,7 +136,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
     <motion.div
       layout
       transition={{ layout: { duration: 0.4, ease: "easeInOut" } }}
-      className="max-w-[500px] bg-white rounded-2xl shadow-2xs p-8"
+      className="max-w-[500px] md:mx-0 mx-3 bg-white rounded-2xl shadow-2xs p-8"
     >
       <h1 className="text-3xl font-extrabold text-gray-800">Sync2Play</h1>
       <h2 className="text-gray-500 mt-2">
