@@ -15,6 +15,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
   const [progress, setProgress] = useState(0);
   const [isUploading,setIsUploading] = useState(false);
   const [isMediaValid, setIsMediaValid] = useState(null);
+  const [ytConvertProgress,setYtConvertProgress] = useState({status : 'null'});
   const baseUrl = import.meta.env.VITE_BASE_API_URL;
 
 
@@ -57,6 +58,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
         } else {
           try {
             resetUploadMedia();
+            setYoutubeData(null);   
             setUrlCheckLoading(true);
             const response = await axios.get(
               `${baseUrl}/api/audio/youtube/info`,
@@ -138,6 +140,22 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
       }
     }
   };
+
+  async function mockYoutubeDownload() {
+    setYtConvertProgress({
+      status : 'pending',
+      progress : 0,
+      message : ""
+    })
+    await new Promise(resolve => setTimeout(resolve, 4000));
+    setYtConvertProgress({
+      status : 'done',
+      progress : 0,
+      message : ""
+    })
+    console.log('b')
+
+  }
 
   return (
     <motion.div
@@ -236,12 +254,13 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
       {
         (youtubeData != null) ? 
         <div>
-            <div className="mt-4 p-3 border border-gray-200 rounded-lg flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-3 bg-gray-50 shadow-inner mb-6">              <img
-                src={youtubeData.thumbnailUrl}
+            <div className="mt-4 p-3 border border-gray-200 rounded-lg flex flex-col sm:flex-row items-center sm:items-center space-y-3 sm:space-y-0 sm:space-x-3 bg-gray-50 shadow-inner mb-6">              <img
+                src={youtubeData.thumbnail}
                 alt="Cover Art"
-                className="h-36 w-auto max-w-full sm:max-w-64 rounded-md object-cover"
+                className="max-h-64 w-auto max-w-full sm:max-w-64 rounded-md object-cover"
+                // className="h-36 w-auto max-w-full sm:max-w-64 rounded-md object-cover"
               />
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 self-start">
                 <p className="text-sm font-semibold text-gray-800 break-words">
                   {youtubeData.title}
                   
@@ -250,24 +269,35 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
                   {youtubeData.channelName}
                 </p>
                 <p className="text-sm text-gray-500 font-medium">
-                  {youtubeData.length}
+                  {convertSecondsToReadableFormat(youtubeData.length)}
                 </p>
               </div>
               
               
             </div>
-              <div
-              onClick={() => {}}
-              className="w-full  text-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 cursor-pointer"
+            <div
+              onClick={() => {mockYoutubeDownload()}}
+              className="w-full  flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 cursor-pointer"
             >
-            Use this audio
+              {(ytConvertProgress.status === 'pending') ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"/> : <h2>Use this audio</h2>}
           </div>
+          {
+            (ytConvertProgress.message != null)
+          }
         </div>
       
         : null
       }
     </motion.div>
   );
+}
+
+function convertSecondsToReadableFormat(input) {
+  const totalSeconds = parseInt(input, 10);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  const formattedLength = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  return formattedLength;
 }
 
 export default HostAudioPrepComponent;
