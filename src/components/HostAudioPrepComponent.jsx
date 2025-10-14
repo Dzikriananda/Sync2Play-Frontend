@@ -60,10 +60,11 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
             resetUploadMedia();
             setYoutubeData(null);   
             setUrlCheckLoading(true);
+            const ytUrl = normalizeYouTubeUrl(url)
             const response = await axios.get(
               `${baseUrl}/api/audio/youtube/info`,
               {
-                params: {videoId : url}
+                params: {videoId : ytUrl}
               }
             );
             setUrlCheckLoading(false);
@@ -77,6 +78,28 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
         }
       }
   }  
+
+  function normalizeYouTubeUrl(inputUrl) {
+      try {
+        const url = new URL(inputUrl);
+    
+        if (url.hostname === 'youtu.be') {
+          const videoId = url.pathname.slice(1); // remove leading "/"
+          return `https://www.youtube.com/watch?v=${videoId}`;
+        }
+    
+        // Handle mobile URLs like m.youtube.com
+        if (url.hostname === 'm.youtube.com') {
+          url.hostname = 'www.youtube.com';
+          return url.toString();
+        }
+    
+        return inputUrl;
+      } catch (e) {
+        return inputUrl; 
+    }
+  }
+  
 
   const onFileChoosen = (e) => {
     setYoutubeData(null);
