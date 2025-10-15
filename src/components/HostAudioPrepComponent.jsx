@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import FileInput from './FileInput';
 import axios from "axios";
@@ -9,14 +9,19 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
   const [url, setUrl] = useState("");
   const [urlError,setUrlError] = useState({error : false, message: ""});
   const [urlCheckLoading,setUrlCheckLoading] = useState(false);
-  const [isReady, setIsReady] = useState(false);
   const [youtubeData,setYoutubeData] = useState(null);
   const [file, setFile] = useState(null);
   const [progress, setProgress] = useState(0);
   const [isUploading,setIsUploading] = useState(false);
   const [isMediaValid, setIsMediaValid] = useState(null);
   const [ytConvertProgress,setYtConvertProgress] = useState({status : 'null'});
+  const [isInProgressOfConverting,setIsInProgressOfConverting] = useState(false);
+  const [isDownloading,setIsDownloading] = useState(false);
+  const [downloadProgress,setDownloadProgress] = useState({progress : null,message : null,error : false});
+  
   const baseUrl = import.meta.env.VITE_BASE_API_URL;
+
+
 
 
   const validMediaMime = new Map([
@@ -51,7 +56,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
 
   
   async function checkUrl() {
-      if(!isUploading) {
+      if(!isUploading && !isInProgressOfConverting && !isDownloading) {
         setUrlError({error : false, message : ""});
         if(!isValidUrl(url)) {
           setUrlError({error : true, message : "Url is Not Valid"});
@@ -88,7 +93,6 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
           return `https://www.youtube.com/watch?v=${videoId}`;
         }
     
-        // Handle mobile URLs like m.youtube.com
         if (url.hostname === 'm.youtube.com') {
           url.hostname = 'www.youtube.com';
           return url.toString();
@@ -130,7 +134,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
   };
 
   const onFileUpload = async () => {
-    if(!isUploading) {
+    if(!isUploading && !isInProgressOfConverting) {
       setIsUploading(true);
       try {
         const formData = new FormData();
@@ -164,21 +168,149 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
     }
   };
 
-  async function mockYoutubeDownload() {
-    setYtConvertProgress({
-      status : 'pending',
-      progress : 0,
-      message : ""
-    })
-    await new Promise(resolve => setTimeout(resolve, 4000));
-    setYtConvertProgress({
-      status : 'done',
-      progress : 0,
-      message : ""
-    })
-    console.log('b')
+  async function downloadAudio(jobId,hostToken) {
+    if (!isDownloading) {
+      try {
+        setIsDownloading(true);
+        const response = await axios.get(
+          `${baseUrl}/api/audio/download`,
+          {
+            params: {sessionId : jobId},
+            responseType: 'blob',
+            onDownloadProgress: (progressEvent) => {
+              const { loaded, total } = progressEvent;
+              let percentCompleted = 0;
+              if (total) {
+                percentCompleted = Math.round((loaded * 100) / total);
+              }
+              setDownloadProgress({progress : percentCompleted});
+            },
+          }
+        );
+        if(response.status == 200) {
+          const disposition = response.headers['content-disposition'];
+
+          let filename = 'audio.mp3'; // default fallback
+          if (disposition) {
+            const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
+            if (filenameMatch && filenameMatch[1]) {
+              filename = decodeURIComponent(filenameMatch[1]);
+            }
+          }
+          //PENTING AGAR UBAH MENJADI FILE DENGAN METADATA SEPERTI TYPE, AGAR BISA DIMAINKAN DI IPHONE
+          const parsedFile = new File([response.data], filename,  { type: 'audio/mpeg' } );
+          callBackWhenMediaReady({sessionId : jobId, hostToken : hostToken},parsedFile);
+          setIsDownloading(false);
+        } else {
+          setIsDownloading(false);
+          setDownloadProgress({progress : null,error : true, message: "Error while downloading"});
+        }
+  
+      } catch(e) {
+        setIsDownloading(false);
+        setDownloadProgress({progress : null,error : true, message: "Error while downloading"});
+      }
+    }
+  }
+
+  
+
+  async function convertYtToAudio() {
+    if(!isInProgressOfConverting) {
+      setIsInProgressOfConverting(true);
+      setYtConvertProgress({
+        status : 'pending',
+        message : 'Getting Video Info...'
+        
+      })
+      try {
+        const ytUrl = normalizeYouTubeUrl(url)
+        const response = await axios.get(
+          `${baseUrl}/api/audio/youtube/download`,
+          {
+            params: {videoId : ytUrl}
+          }
+        );
+        if (response.status === 200) {
+          const jobId = response.data.jobId;
+          const hostToken = response.data.hostToken;
+          checkYtConversionJobProgress(jobId,hostToken);
+        } else {
+          throw new Error("Conversion Failed. Try Again");
+        }
+  
+      } catch(e) {
+        setIsInProgressOfConverting(false);
+        setYtConvertProgress({
+          status : 'error',
+          message : e
+        })
+  
+      }
+    }
 
   }
+
+  async function checkYtConversionJobProgress(jobId,hostToken) {
+    const intervalMs = 2000; 
+    const maxAttempts = 60;
+    let attempts = 0;
+
+    const intervalId = setInterval(async () => {
+      attempts++;
+
+      try {
+        const res = await axios.get(`${baseUrl}/api/audio/progress/${jobId}`)
+        const data = res.data;
+        console.log(data);
+        //response: { status: 'pending' | 'finished' | 'error', url?: '...' }
+        if (data.status === 'done') {
+          clearInterval(intervalId);
+          setYtConvertProgress({
+            status: 'done',
+            message: 'Conversion complete!',
+          });
+          setIsInProgressOfConverting(false);
+          downloadAudio(jobId,hostToken);
+        } else if (data.status === 'error') {
+          clearInterval(intervalId);
+          setYtConvertProgress({
+            status: 'error',
+            message: 'Conversion failed on server, try again'
+          });
+          setIsInProgressOfConverting(false);
+        } else {
+          setYtConvertProgress({
+            status: 'pending',
+            message: `Converting, Could take up to 15 seconds...`
+          });
+        }
+
+      } catch (err) {
+        setIsInProgressOfConverting(false);
+        clearInterval(intervalId);
+        setYtConvertProgress({
+          status: 'error',
+          message: `${err.message || String(err)}. Try Again`
+        });
+      }
+      if (attempts >= maxAttempts) {
+        setIsInProgressOfConverting(false);
+        clearInterval(intervalId);
+        setYtConvertProgress({
+          status: 'error',
+          message: 'Conversion timed out, try again'
+        });
+      }
+    }, intervalMs);
+  }
+
+  // useEffect(() => {
+  //   if (ytConvertProgress.status === 'done') {
+  //     console.log('Conversion is complete!');
+  //     downloadAudio();
+  //   }
+  // }, [ytConvertProgress.status]);
 
   return (
     <motion.div
@@ -204,7 +336,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
       <div className="h-3" />
       <div className="flex flex-row">
         <div
-          className="w-full flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 cursor-pointer"
+          className={`w-full flex justify-center items-center bg-blue-600 hover:bg-blue-700 ${((isUploading || isDownloading || isInProgressOfConverting)) ? 'opacity-50' : null} text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 cursor-pointer`}
           onClick={checkUrl}
         >
           {
@@ -212,7 +344,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
           }
         </div>
         <div className="w-3" />
-        <FileInput onFileChoosen={onFileChoosen} />
+        <FileInput onFileChoosen={onFileChoosen} isClickable={(!isUploading && !isDownloading &&!isInProgressOfConverting)} />
       </div>
 
 
@@ -257,7 +389,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
       <AnimatePresence>
         {progress > 0 && (
           <motion.div
-            key="progress"
+            key="upload_progress"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -274,6 +406,27 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
           </motion.div>
         )}
       </AnimatePresence>
+      <AnimatePresence>
+        {downloadProgress.progress > 0 && (
+          <motion.div
+            key="download_progress"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mt-6 w-full bg-gray-200 rounded-full h-6 overflow-hidden"
+          >
+            <motion.div
+              className="h-6 bg-green-500 text-white rounded-full flex items-center justify-center"
+              style={{ width: `${downloadProgress.progress}%` }}
+              transition={{ duration: 0.3 }}
+            >
+              {downloadProgress.progress }%
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {
         (youtubeData != null) ? 
         <div>
@@ -299,13 +452,16 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
               
             </div>
             <div
-              onClick={() => {mockYoutubeDownload()}}
+              onClick={convertYtToAudio}
               className="w-full  flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 cursor-pointer"
             >
-              {(ytConvertProgress.status === 'pending') ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"/> : <h2>Use this audio</h2>}
+              {(isInProgressOfConverting) ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"/> : <h2>Use this audio</h2>}
           </div>
           {
-            (ytConvertProgress.message != null)
+            (ytConvertProgress.status != 'null') ? 
+            <div className='flex items-center justify-center'>
+              <h3 className={`${(ytConvertProgress.status === 'error') ? 'text-red-500' : null }`}>{ytConvertProgress.message}</h3> 
+            </div> : null
           }
         </div>
       

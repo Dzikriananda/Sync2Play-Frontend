@@ -14,7 +14,7 @@ function HostComponent() {
   const [isAudioReady,setIsAudioReady] = useState(false);
   const [loading,setLoading] = useState(false);
   const [isUploadFinished, setIsUploadFinished] = useState(false);
-
+  const [isDownloadFinished,setIsDownloadFinished] = useState(false);
 
   const onAudioReady = async (data,fileInput) => {
     setLoading(true);
