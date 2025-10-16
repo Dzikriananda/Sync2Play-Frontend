@@ -48,7 +48,10 @@
           delay
         });
         console.log(`offset in the handlePlayCommand ${offset.toFixed(0)} ms`);
-      
+        if(isDesktopOS) {
+          delay = delay - 100;
+          console.log(`reducing delay in the handlePlayCommand to  ${delay.toFixed(0)} ms`);
+        }
         if (delay > 0) {
           setTimeout(() => {
             setIsIsCountingDown(false);
