@@ -18,7 +18,6 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
   const [isInProgressOfConverting,setIsInProgressOfConverting] = useState(false);
   const [isDownloading,setIsDownloading] = useState(false);
   const [downloadProgress,setDownloadProgress] = useState({progress : null,message : null,error : false});
-  
   const baseUrl = import.meta.env.VITE_BASE_API_URL;
 
 
@@ -169,7 +168,10 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
   };
 
   async function downloadAudio(jobId,hostToken) {
+    console.log('mencoba download');
+    console.log('after delay');
     if (!isDownloading) {
+      console.log('sedang download');
       try {
         setIsDownloading(true);
         const response = await axios.get(
@@ -187,6 +189,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
             },
           }
         );
+        console.log(response);
         if(response.status == 200) {
           const disposition = response.headers['content-disposition'];
 
@@ -202,11 +205,15 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
           callBackWhenMediaReady({sessionId : jobId, hostToken : hostToken},parsedFile);
           setIsDownloading(false);
         } else {
+          console.log('error while download 2: ');
           setIsDownloading(false);
           setDownloadProgress({progress : null,error : true, message: "Error while downloading"});
         }
   
       } catch(e) {
+        console.log('error while download:', e);
+        console.log('error config:', e.config);
+        console.log('error response:', e.response);
         setIsDownloading(false);
         setDownloadProgress({progress : null,error : true, message: "Error while downloading"});
       }
@@ -272,6 +279,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
           });
           setIsInProgressOfConverting(false);
           downloadAudio(jobId,hostToken);
+          
         } else if (data.status === 'error') {
           clearInterval(intervalId);
           setYtConvertProgress({
@@ -463,6 +471,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
               <h3 className={`${(ytConvertProgress.status === 'error') ? 'text-red-500' : null }`}>{ytConvertProgress.message}</h3> 
             </div> : null
           }
+          
         </div>
       
         : null
