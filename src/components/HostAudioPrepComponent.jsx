@@ -56,6 +56,9 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
   
   async function checkUrl() {
       if(!isUploading && !isInProgressOfConverting && !isDownloading) {
+        setYtConvertProgress({
+          status: 'null',
+        });
         setUrlError({error : false, message : ""});
         if(!isValidUrl(url)) {
           setUrlError({error : true, message : "Url is Not Valid"});
@@ -168,8 +171,6 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
   };
 
   async function downloadAudio(jobId,hostToken) {
-    console.log('mencoba download');
-    console.log('after delay');
     if (!isDownloading) {
       console.log('sedang download');
       try {
@@ -178,6 +179,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
           `${baseUrl}/api/audio/download`,
           {
             params: {sessionId : jobId},
+            withCredentials: false,
             responseType: 'blob',
             onDownloadProgress: (progressEvent) => {
               const { loaded, total } = progressEvent;
@@ -205,7 +207,6 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
           callBackWhenMediaReady({sessionId : jobId, hostToken : hostToken},parsedFile);
           setIsDownloading(false);
         } else {
-          console.log('error while download 2: ');
           setIsDownloading(false);
           setDownloadProgress({progress : null,error : true, message: "Error while downloading"});
         }

@@ -104,7 +104,9 @@
           setTimeout(() => {}, 2000);
           setIsConnected(true);
           await calibrateOffset(socket, serverOffsetRef);
+          console.log('data adalah : ', data);
           socket.emit('join-session', data.sessionId);
+
         }
     
         function onDisconnect() {
