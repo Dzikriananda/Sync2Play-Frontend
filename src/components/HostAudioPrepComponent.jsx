@@ -415,7 +415,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
           </motion.div>
         )}
       </AnimatePresence>
-      <AnimatePresence>
+      {/* <AnimatePresence>
         {downloadProgress.progress > 0 && (
           <motion.div
             key="download_progress"
@@ -434,7 +434,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence> */}
 
       {
         (youtubeData != null) ? 
@@ -460,12 +460,36 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
               
               
             </div>
-            <div
-              onClick={convertYtToAudio}
-              className="w-full  flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 cursor-pointer"
-            >
-              {(isInProgressOfConverting) ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"/> : <h2>Use this audio</h2>}
-          </div>
+            {
+              (ytConvertProgress.status != 'done' ) ? 
+                <div
+                  onClick={convertYtToAudio}
+                  className="w-full  flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 cursor-pointer"
+                >
+                  {(isInProgressOfConverting) ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"/> : <h2>Use this audio</h2>}
+                </div>
+                : 
+                <AnimatePresence>
+                  {downloadProgress.progress > 0 && (
+                    <motion.div
+                      key="download_progress"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="mt-6 w-full bg-gray-200 rounded-full h-6 overflow-hidden"
+                    >
+                      <motion.div
+                        className="h-6 bg-green-500 text-white rounded-full flex items-center justify-center"
+                        style={{ width: `${downloadProgress.progress}%` }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        {downloadProgress.progress }%
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+            }
           {
             (ytConvertProgress.status != 'null') ? 
             <div className='flex items-center justify-center'>
