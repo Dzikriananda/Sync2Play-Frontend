@@ -42,16 +42,22 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
   }
 
   const isValidUrl = (string) => {
-    console.log(string);
     try {
       new URL(string);
-      console.log('url valid');
       return true;
     } catch (_) {
-      console.log('url not valid');
       return false;
     }
   };
+
+  function isValidYoutubeUrl(string) {
+    const isAnUrl = isValidUrl(string);
+    if(!isAnUrl) {
+      return false;
+    } else {
+      return isYouTubeUrl(string);
+    }
+  }
 
   
   async function checkUrl() {
@@ -60,8 +66,8 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
           status: 'null',
         });
         setUrlError({error : false, message : ""});
-        if(!isValidUrl(url)) {
-          setUrlError({error : true, message : "Url is Not Valid"});
+        if(!isValidYoutubeUrl(url)) {
+          setUrlError({error : true, message : "Url is Not a Valid Youtube Url"});
         } else {
           try {
             resetUploadMedia();
@@ -85,6 +91,10 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
         }
       }
   }  
+
+  function isYouTubeUrl(url) {
+    return url.includes('youtube.com') || url.includes('youtu.be');
+  }
 
   function normalizeYouTubeUrl(inputUrl) {
       try {
@@ -329,10 +339,10 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
     >
       <h1 className="text-3xl font-extrabold text-gray-800">Sync2Play</h1>
       <h2 className="text-gray-500 mt-2">
-        Enter a direct link to an audio file (.mp3, .wav) to play and download it.
+        Enter a link to a youtube video to play and download it.
       </h2>
 
-      <h2 className="text-gray-700 font-medium text-sm mt-6">Audio File Url</h2>
+      <h2 className="text-gray-700 font-medium text-sm mt-6">Youtube Url</h2>
       <input
         className="mt-1 border border-gray-300 rounded-lg w-full h-9 px-2 shadow-md"
         type="text"

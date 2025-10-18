@@ -26,6 +26,7 @@ export default function EnterCodeComponent({onMediaDownloaded}) {
 
   useEffect(() => {
     const downloadFile = async () => {
+      setError({error : false, message: ""});
       if (isSessionExist) {
         try {
           setIsDownloading(true);
@@ -76,6 +77,7 @@ export default function EnterCodeComponent({onMediaDownloaded}) {
 
 
   async function checkIfSessionExist() {
+    setError({error : false, message: ""});
     if(!isDownloading && !isLoading) {
       if(code.length != 6) {
         setError({error : true, message: "Code must be 6 length"})
