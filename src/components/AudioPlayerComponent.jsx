@@ -17,6 +17,7 @@
       // const [serverOffset, setServerOffset] = useState(0);
       const serverOffsetRef = useRef(0);
       const [isIOS,setIsIOS] = useState(false);
+      const userData = data;
 
       const playerRef = useRef(null);
 
@@ -25,7 +26,7 @@
       },[]);
 
       useEffect(() => {
-        if(data.hostToken != null){
+        if(userData.hostToken != null){
           setIsHost(true);
         } else {
           setIsHost(false);
@@ -108,7 +109,7 @@
           setIsConnected(true);
           await calibrateOffset(socket, serverOffsetRef);
           console.log('data adalah : ', data);
-          socket.emit('join-session', data.sessionId);
+          socket.emit('join-session', {sessionId : userData.sessionId, hostToken : userData.hostToken});
 
         }
     
@@ -141,15 +142,15 @@
       }, []);
 
       function sendPlayCommand() {
-        socket.emit('play',data.hostToken);
+        socket.emit('play',{sessionId : userData.sessionId, hostToken : userData.hostToken});
       }
 
       function sendPauseCommand() {
-        socket.emit('pause',data.hostToken);
+        socket.emit('pause',{sessionId : userData.sessionId, hostToken : userData.hostToken});
       }
 
       function sendRestartCommand() {
-        socket.emit('restart',data.hostToken);
+        socket.emit('restart',{sessionId : userData.sessionId, hostToken : userData.hostToken});
       }
 
       async function calibrateOffset(socket, serverOffsetRef) {

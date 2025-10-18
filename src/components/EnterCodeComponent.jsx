@@ -120,7 +120,7 @@ export default function EnterCodeComponent({onMediaDownloaded}) {
       {
         (isSessionExist) ? <h3 className="text-green-500 text-sm mt-1 ml-2">Session Found, Downloading Audio...</h3> : null
       }
-      <div onClick={checkIfSessionExist} className='mt-8 w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50' >
+      <div onClick={checkIfSessionExist} className={`mt-8 w-full text-center bg-blue-600 hover:bg-blue-700 ${isDownloading ? 'opacity-50' : null} text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50`} >
         <div className='flex justify-center items-center'>
           {
             isLoading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"/>  : <h2>Enter</h2>
