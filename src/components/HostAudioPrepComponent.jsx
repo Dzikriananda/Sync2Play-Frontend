@@ -339,7 +339,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
     >
       <h1 className="text-3xl font-extrabold text-gray-800">Sync2Play</h1>
       <h2 className="text-gray-500 mt-2">
-        Enter a link to a youtube video to play and download it or you can upload your own mp3 audio file.
+        Enter a link to a youtube video or you can upload your own mp3 audio file.
       </h2>
 
       <h2 className="text-gray-700 font-medium text-sm mt-6">Youtube Url</h2>
