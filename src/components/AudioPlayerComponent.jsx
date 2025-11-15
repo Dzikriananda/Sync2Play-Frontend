@@ -18,6 +18,7 @@
       const serverOffsetRef = useRef(0);
       const [isIOS,setIsIOS] = useState(false);
       const userData = data;
+      const [onlineUsers,setOnlineUsers] = useState(0);
 
       const playerRef = useRef(null);
 
@@ -125,19 +126,26 @@
             handlePlayCommand(startTime);
           } else if (command === 'pause') {
             handlePauseCommand();
-          } else {
+          } else if(command ==='restart') {
             handleRestartCommand();
           }
+        }
+
+        function onOnlineUsers(value) {
+          setOnlineUsers(value.onOnlineUsers);
         }
     
         socket.on('connect', onConnect);
         socket.on('disconnect', onDisconnect);
         socket.on('session-message', onEvent);
+        socket.on('online-users', onOnlineUsers);
+
     
         return () => {
           socket.off('connect', onConnect);
           socket.off('disconnect', onDisconnect);
           socket.off('session-message', onEvent);
+          socket.off('online-users', onOnlineUsers);
         };
       }, []);
 
@@ -215,7 +223,7 @@
               Code for this session is {data.sessionId}, Share to your friends to join!!
             </h2>
             <h2 className="text-gray-500 mt-2">
-              Number of users has joined : 0
+              Number of users has joined : {onlineUsers}
             </h2>
             <CustomAudioPlayer playerRef={playerRef} audioUrl={audioUrl} onPlayClicked={sendPlayCommand} onPauseClicked={sendPauseCommand} onRestartClicked={sendRestartCommand} isCountingDown={isCountingDown} isHost={isHost} isIOS={isIOS}/>
             <div className="w-full h-[1px] bg-gray-300/70 rounded-full mt-2 mb-1" />

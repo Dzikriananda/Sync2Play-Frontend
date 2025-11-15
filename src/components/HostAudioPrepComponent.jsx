@@ -347,7 +347,7 @@ function HostAudioPrepComponent({callBackWhenMediaReady,callBackWhenUploadFinish
         className="mt-1 border border-gray-300 rounded-lg w-full h-9 px-2 shadow-md"
         type="text"
         onChange={(e) => {setUrl(e.target.value)}}
-        placeholder="e.g., https://dreamybull.com/song.mp3"
+        placeholder="e.g., https://www.youtube.com/watch?v=GL8idVuo2y4"
       />
       {
         (urlError.error) ? <p className='text-red-500 text-sm ml-3 mt-1'>{urlError.message}</p> :  null
